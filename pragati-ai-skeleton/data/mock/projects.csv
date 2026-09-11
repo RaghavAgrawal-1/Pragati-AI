@@ -1,0 +1,5 @@
+project_id,project_name,sector,ministry,physical_progress,financial_progress,original_cost,revised_cost,risk_score,risk_level
+PRJ001,Demo Highway Project,Transport,Demo Ministry,61,74,500,590,82,CRITICAL
+PRJ002,Demo Power Project,Energy,Demo Ministry,74,72,800,850,67,HIGH
+PRJ003,Demo Water Project,Water & Sanitation,Demo Ministry,82,79,300,305,34,LOW
+PRJ004,Demo Communication Project,Communication,Demo Ministry,55,69,420,510,76,CRITICAL

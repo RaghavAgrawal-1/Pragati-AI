@@ -1,0 +1,3 @@
+-- Placeholder.
+-- Implement the PostgreSQL schema after the PAIMANA field/data audit.
+-- Planned tables: projects, project_updates, milestones, predictions, risk_scores, alerts.
