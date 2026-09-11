@@ -1,0 +1,71 @@
+{
+    "cost_classifier": {
+        "file": "cost_overrun_classifier.joblib",
+        "features": [
+            "sector",
+            "line_ministry",
+            "project_type",
+            "implementing_agency",
+            "location",
+            "status",
+            "approved_cost_cr",
+            "log_approved_cost",
+            "physical_progress_pct",
+            "remaining_progress_pct",
+            "milestones_total",
+            "milestones_completed",
+            "milestone_completion_ratio",
+            "planned_duration_days"
+        ],
+        "target": "cost_overrun_flag",
+        "type": "binary_classification",
+        "roc_auc": 0.8307
+    },
+    "cost_regressor": {
+        "file": "cost_overrun_regressor.joblib",
+        "features": [
+            "sector",
+            "line_ministry",
+            "project_type",
+            "implementing_agency",
+            "location",
+            "status",
+            "approved_cost_cr",
+            "log_approved_cost",
+            "physical_progress_pct",
+            "remaining_progress_pct",
+            "milestones_total",
+            "milestones_completed",
+            "milestone_completion_ratio",
+            "planned_duration_days"
+        ],
+        "target": "log_overrun_pct",
+        "type": "regression",
+        "mae_percentage_points": 24.947,
+        "r2": 0.4792
+    },
+    "time_classifier": {
+        "file": "time_overrun_classifier.joblib",
+        "features": [
+            "sector",
+            "line_ministry",
+            "project_type",
+            "implementing_agency",
+            "location",
+            "approved_cost_cr",
+            "physical_progress_pct",
+            "milestones_total",
+            "milestones_completed",
+            "planned_duration_days",
+            "planned_duration_months",
+            "elapsed_duration_ratio",
+            "remaining_planned_days",
+            "milestone_completion_ratio",
+            "remaining_progress_pct"
+        ],
+        "target": "time_overrun_flag",
+        "type": "binary_classification",
+        "roc_auc": 0.552,
+        "status": "prototype"
+    }
+}
