@@ -1,5 +1,5 @@
 {
-    "model": "gemini-3.6-flash",
+    "model": "gemini-2.0-flash",
     "api_version": "v1beta",
     "timeout_seconds": 120,
     "max_image_size_mb": 10
