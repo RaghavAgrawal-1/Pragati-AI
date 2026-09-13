@@ -30,9 +30,9 @@ frontend/.env
 # Data / models
 data/raw/*
 data/processed/*
-ml/models/*
 *.pkl
-*.joblib
+!ml/models/*.joblib
+!backend/ml/models/*.joblib
 
 # OS & Logs
 .DS_Store
