@@ -9,8 +9,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 class Settings(BaseSettings):
     app_name: str = "Pragati AI API"
     app_version: str = "0.1.0"
-    environment: str = "development"
-    database_url: str = "postgresql+psycopg://pragati:change_me@localhost:5433/pragati"
+    database_url: str = "sqlite:///./pragati.db"
 
     @property
     def resolved_database_url(self) -> str:
