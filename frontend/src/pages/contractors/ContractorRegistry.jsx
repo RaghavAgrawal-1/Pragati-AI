@@ -71,6 +71,7 @@ export default function ContractorRegistry() {
   // Modal controls
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedContractorForUpdate, setSelectedContractorForUpdate] = useState(null);
+  const [newlyRegisteredId, setNewlyRegisteredId] = useState(null);
 
   const fetchContractors = async (customParams = {}) => {
     setLoading(true);
@@ -78,16 +79,26 @@ export default function ContractorRegistry() {
       const activeSearch = customParams.search !== undefined ? customParams.search : search;
       const activeSector = customParams.sector !== undefined ? customParams.sector : selectedSector;
       const activeGrade = customParams.grade !== undefined ? customParams.grade : selectedGrade;
+      const activeSortBy = customParams.sort_by !== undefined ? customParams.sort_by : sortBy;
 
       const params = {
-        sort_by: sortBy,
+        sort_by: activeSortBy,
       };
       if (activeSearch && activeSearch.trim()) params.search = activeSearch.trim();
       if (activeSector && activeSector !== "ALL") params.sector = activeSector;
       if (activeGrade && activeGrade !== "ALL") params.grade = activeGrade;
 
       const res = await contractorService.list(params);
-      const items = Array.isArray(res) ? res : (res?.items ?? []);
+      let items = Array.isArray(res) ? res : (res?.items ?? []);
+
+      // If we have a newly registered contractor, guarantee it's placed first
+      if (newlyRegisteredId) {
+        const newlyItem = items.find((c) => c.id === newlyRegisteredId);
+        if (newlyItem) {
+          items = [newlyItem, ...items.filter((c) => c.id !== newlyRegisteredId)];
+        }
+      }
+
       setContractors(items);
 
       const sumRes = await contractorService.summary().catch(() => null);
@@ -113,15 +124,17 @@ export default function ContractorRegistry() {
     setSearch("");
     setSelectedSector("ALL");
     setSelectedGrade("ALL");
+    setSortBy("newest");
 
     if (newContractor && newContractor.id) {
+      setNewlyRegisteredId(newContractor.id);
       setContractors((prev) => [
         newContractor,
         ...prev.filter((c) => c.id !== newContractor.id),
       ]);
     }
 
-    fetchContractors({ search: "", sector: "ALL", grade: "ALL" });
+    fetchContractors({ search: "", sector: "ALL", grade: "ALL", sort_by: "newest" });
   };
 
   return (
@@ -266,6 +279,7 @@ export default function ContractorRegistry() {
                 className="rounded-xl border border-white/[0.08] bg-surface-card px-2.5 py-1.5 text-[11.5px] text-ink focus:border-orange/50 focus:outline-none"
                 style={{ backgroundColor: "#1A1B25", color: "#F0F2F8" }}
               >
+                <option value="newest" style={{ backgroundColor: "#1A1B25", color: "#F0F2F8" }}>Recently Onboarded (Newest)</option>
                 <option value="trust_score" style={{ backgroundColor: "#1A1B25", color: "#F0F2F8" }}>Highest Trust Score</option>
                 <option value="on_time" style={{ backgroundColor: "#1A1B25", color: "#F0F2F8" }}>Highest On-Time Rate</option>
                 <option value="name" style={{ backgroundColor: "#1A1B25", color: "#F0F2F8" }}>Company Name (A-Z)</option>
@@ -314,14 +328,25 @@ export default function ContractorRegistry() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {contractors.map((contractor) => {
-            const badgeStyle = getBadgeStyle(contractor.badge);
+            const isNewlyOnboarded = contractor.id === newlyRegisteredId;
+            const badgeStyle = isNewlyOnboarded
+              ? {
+                  label: "Newly Onboarded Partner",
+                  bg: "bg-orange/20 text-orange border border-orange/40 font-black animate-pulse",
+                  icon: CheckCircle2,
+                }
+              : getBadgeStyle(contractor.badge);
             const BadgeIcon = badgeStyle.icon;
             const gradeColor = getGradeBadgeColor(contractor.rating_grade);
 
             return (
               <Card
                 key={contractor.id}
-                className="flex flex-col justify-between p-5 hover:border-orange/20 transition-all"
+                className={`flex flex-col justify-between p-5 transition-all ${
+                  isNewlyOnboarded
+                    ? "border-orange/60 bg-orange/[0.04] ring-2 ring-orange/40 shadow-[0_0_20px_rgba(232,84,24,0.2)]"
+                    : "hover:border-orange/20"
+                }`}
               >
                 <div>
                   {/* Top Bar: Grade & Status Badge */}

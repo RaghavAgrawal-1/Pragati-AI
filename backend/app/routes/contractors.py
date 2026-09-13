@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -53,6 +53,8 @@ def get_contractors(
         contractors.sort(key=lambda c: (c.on_time_projects / max(c.total_projects, 1)), reverse=True)
     elif sort_by == "name":
         contractors.sort(key=lambda c: c.company_name.lower())
+    elif sort_by == "newest":
+        contractors.sort(key=lambda c: c.id, reverse=True)
     else:  # default trust_score
         contractors.sort(key=lambda c: c.trust_score, reverse=True)
 
