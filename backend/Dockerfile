@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 COPY ml ./ml
+COPY vision ./vision
 COPY run.py .
 
 EXPOSE 8000
