@@ -11,7 +11,11 @@ from app.services.risk_engine import (
     calculate_progress_risk,
     calculate_status_risk,
 )
-from ml.ml_service import predict_projects_risk_batch
+try:
+    from ml.ml_service import predict_projects_risk_batch
+except Exception:
+    def predict_projects_risk_batch(features_list):
+        return [{}] * len(features_list)
 
 router = APIRouter(tags=["Predictions"])
 

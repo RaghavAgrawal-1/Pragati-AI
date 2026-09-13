@@ -1,10 +1,14 @@
 import sys
 from pathlib import Path
-# Add project root to Python path so ML modules can be imported
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+# Ensure both backend directory and project root are in sys.path
+CURRENT_DIR = Path(__file__).resolve().parent
+BACKEND_DIR = CURRENT_DIR.parent
+PROJECT_ROOT = BACKEND_DIR.parent
+
+for p in [str(BACKEND_DIR), str(PROJECT_ROOT)]:
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
