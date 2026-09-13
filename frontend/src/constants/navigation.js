@@ -1,6 +1,7 @@
 import {
   LayoutDashboard, FolderKanban, Activity, Brain, ShieldAlert,
   Siren, ClipboardCheck, PieChart, TrendingUp, Scale, Sparkles, Settings2,
+  Award, Compass,
 } from "lucide-react";
 
 export const NAV_GROUPS = [
@@ -17,6 +18,7 @@ export const NAV_GROUPS = [
     items: [
       { to: "/predictions", label: "Predictions", icon: Brain, end: true },
       { to: "/risk", label: "Risk Intelligence", icon: ShieldAlert },
+      { to: "/blueprint", label: "AI Blueprint Studio", icon: Compass },
     ],
   },
   {
@@ -24,6 +26,7 @@ export const NAV_GROUPS = [
     items: [
       { to: "/warnings", label: "Early Warnings", icon: Siren },
       { to: "/interventions", label: "Interventions", icon: ClipboardCheck },
+      { to: "/contractors", label: "Contractor Trust Registry", icon: Award },
     ],
   },
   {

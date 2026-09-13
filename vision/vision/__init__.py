@@ -1,0 +1,3 @@
+"""
+Pragati AI Vision Module
+"""

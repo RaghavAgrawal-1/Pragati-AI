@@ -8,7 +8,10 @@ class Base(DeclarativeBase):
     pass
 
 
+connect_args = {"check_same_thread": False} if settings.resolved_database_url.startswith("sqlite") else {}
+
 engine = create_engine(
-    settings.database_url,
+    settings.resolved_database_url,
     pool_pre_ping=True,
+    connect_args=connect_args,
 )

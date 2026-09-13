@@ -22,6 +22,8 @@ const RiskIntelligence = lazy(() => import("../pages/risk/RiskIntelligence"));
 const Warnings = lazy(() => import("../pages/warnings/Warnings"));
 const WarningDetails = lazy(() => import("../pages/warnings/WarningDetails"));
 const Interventions = lazy(() => import("../pages/interventions/Interventions"));
+const ContractorRegistry = lazy(() => import("../pages/contractors/ContractorRegistry"));
+const BlueprintStudio = lazy(() => import("../pages/blueprint/BlueprintStudio"));
 const PortfolioAnalytics = lazy(() => import("../pages/analytics/PortfolioAnalytics"));
 const CostEscalation = lazy(() => import("../pages/analytics/CostEscalation"));
 const Benchmarking = lazy(() => import("../pages/analytics/Benchmarking"));
@@ -53,10 +55,12 @@ export default function AppRoutes() {
             <Route path="/predictions/cost" element={<CostPrediction />} />
             <Route path="/predictions/time" element={<TimePrediction />} />
             <Route path="/risk" element={<RiskIntelligence />} />
+            <Route path="/blueprint" element={<BlueprintStudio />} />
 
             <Route path="/warnings" element={<Warnings />} />
             <Route path="/warnings/:id" element={<WarningDetails />} />
             <Route path="/interventions" element={<Interventions />} />
+            <Route path="/contractors" element={<ContractorRegistry />} />
 
             <Route path="/analytics" element={<PortfolioAnalytics />} />
             <Route path="/analytics/cost" element={<CostEscalation />} />

@@ -26,23 +26,32 @@ export default function MetricCard({ label, value, trend, supporting, icon: Icon
     <Card
       as={Tag}
       onClick={onClick}
-      className={`p-5 text-left transition-shadow ${onClick ? "hover:shadow-md" : ""}`}
+      brackets={true}
+      className={`group p-5 text-left transition-all duration-200 ${
+        onClick ? "cursor-pointer hover:border-slate-300 hover:shadow-md active:scale-[0.99]" : ""
+      }`}
     >
       <div className="flex items-center justify-between">
-        <span className="text-[12px] font-medium text-muted">{label}</span>
-        {Icon && <Icon size={16} className="text-slate-400" aria-hidden="true" />}
+        <span className="text-[11.5px] font-semibold uppercase tracking-wider text-slate-500">{label}</span>
+        {Icon && (
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition-colors group-hover:bg-[var(--infra-primary-light)] group-hover:text-[var(--infra-primary-dark)]">
+            <Icon size={16} aria-hidden="true" />
+          </div>
+        )}
       </div>
 
-      <p className="mt-3 text-[26px] font-semibold tabular-nums leading-none tracking-tight text-ink">{value ?? "—"}</p>
+      <p className="mt-2 text-[26px] font-bold tabular-nums leading-none tracking-tight text-ink font-sans">
+        {value ?? "—"}
+      </p>
 
       <div className="mt-3 flex items-center gap-2 text-[12px]">
         {trend !== undefined && trend !== null && (
-          <span className={`inline-flex items-center gap-0.5 font-medium ${good ? "text-risk-low" : "text-risk-high"}`}>
+          <span className={`inline-flex items-center gap-0.5 font-bold ${good ? "text-emerald-600" : "text-rose-600"}`}>
             <Arrow size={13} aria-hidden="true" />
             {Math.abs(Number(trend)).toFixed(1)}%
           </span>
         )}
-        {supporting && <span className="truncate text-muted">{supporting}</span>}
+        {supporting && <span className="truncate text-slate-500 text-[11.5px] font-mono">{supporting}</span>}
       </div>
     </Card>
   );

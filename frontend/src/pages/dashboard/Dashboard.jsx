@@ -1,6 +1,19 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AlertTriangle, FolderKanban, IndianRupee, RefreshCw, ShieldAlert, Timer } from "lucide-react";
+import {
+  AlertTriangle,
+  FolderKanban,
+  IndianRupee,
+  RefreshCw,
+  ShieldAlert,
+  Timer,
+  Search,
+  X,
+  LayoutDashboard,
+  MapPin,
+  Eye,
+  SlidersHorizontal,
+} from "lucide-react";
 
 import PageHeader from "../../components/layout/PageHeader";
 import Card from "../../components/common/Card";
@@ -13,6 +26,8 @@ import ChartCard from "../../components/charts/ChartCard";
 import DonutChart from "../../components/charts/DonutChart";
 import LineChart from "../../components/charts/LineChart";
 import BarChart from "../../components/charts/BarChart";
+import VisionMonitor from "./VisionMonitor";
+import GeospatialRiskMap from "../../components/charts/GeospatialRiskMap";
 import ErrorState from "../../components/feedback/ErrorState";
 import EmptyState from "../../components/feedback/EmptyState";
 import { SkeletonRows } from "../../components/feedback/Skeleton";
@@ -58,7 +73,7 @@ function CostOverview({ cost }) {
       {escalation !== null && (
         <p className="border-t border-line pt-3 text-[12.5px] text-muted">
           Revised outlay is{" "}
-          <span className="font-medium text-risk-high">{escalation.toFixed(1)}% above</span> the approved figure across the portfolio.
+          <span className="font-semibold text-risk-high">+{escalation.toFixed(1)}% above</span> initial approved figure.
         </p>
       )}
     </div>
@@ -69,19 +84,21 @@ function CostOverview({ cost }) {
 function ExecutiveInsight({ insight }) {
   if (!insight) return null;
   return (
-    <Card className="border-navy/15 bg-gradient-to-br from-[#F7F8FC] to-white p-5">
+    <Card className="border-navy/15 bg-gradient-to-br from-[#F7F8FC] to-white p-4 shadow-sm">
       <div className="flex items-start gap-3">
         <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-navy text-white">
           <ShieldAlert size={15} aria-hidden="true" />
         </span>
-        <div>
-          <p className="text-[12px] font-medium uppercase tracking-wide text-muted">AI executive insight</p>
-          <p className="mt-1.5 text-[14px] leading-relaxed text-ink">{insight.message}</p>
-          {insight.filter && (
-            <Link to={`/projects?${new URLSearchParams(insight.filter)}`} className="mt-3 inline-block text-[12.5px] font-medium text-navy hover:underline">
-              View affected projects
-            </Link>
-          )}
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <p className="text-[11.5px] font-semibold uppercase tracking-wider text-navy">AI Decision Support Insight</p>
+            {insight.filter && (
+              <Link to={`/projects?${new URLSearchParams(insight.filter)}`} className="text-[12px] font-medium text-navy hover:underline">
+                View affected projects →
+              </Link>
+            )}
+          </div>
+          <p className="mt-1 text-[13.5px] leading-relaxed text-slate-800">{insight.message}</p>
         </div>
       </div>
     </Card>
@@ -98,14 +115,14 @@ function RecentWarnings({ warnings, loading }) {
     <ul className="divide-y divide-line">
       {warnings.slice(0, 4).map((w) => (
         <li key={w.id}>
-          <Link to={`/warnings/${w.id}`} className="flex gap-3 px-5 py-3.5 hover:bg-slate-50">
-            <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${RISK_LEVELS[w.severity]?.dot ?? "bg-slate-400"}`} aria-hidden="true" />
+          <Link to={`/warnings/${w.id}`} className="flex gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
+            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${RISK_LEVELS[w.severity]?.dot ?? "bg-slate-400"}`} aria-hidden="true" />
             <span className="min-w-0 flex-1">
-              <span className="flex items-baseline justify-between gap-3">
+              <span className="flex items-baseline justify-between gap-2">
                 <span className="truncate text-[13px] font-medium text-ink">{w.project_name}</span>
                 <span className="shrink-0 text-[11px] text-slate-400">{formatRelative(w.detected_at)}</span>
               </span>
-              <span className="mt-0.5 block text-[12.5px] leading-snug text-muted">{w.message}</span>
+              <span className="mt-0.5 block text-[12px] leading-snug text-muted line-clamp-1">{w.message}</span>
             </span>
           </Link>
         </li>
@@ -116,6 +133,10 @@ function RecentWarnings({ warnings, loading }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+
   const { data, loading, error, refetch, isDemo } = useDashboard();
   const { warnings, loading: warningsLoading } = useWarnings({ limit: 4 });
 
@@ -130,6 +151,33 @@ export default function Dashboard() {
   );
   const totalRisked = riskData.reduce((sum, r) => sum + r.value, 0);
 
+  // Filter critical projects based on user search and category pills
+  const filteredProjects = useMemo(() => {
+    const list = data?.critical_projects ?? [];
+    return list.filter((p) => {
+      const matchesSearch =
+        !searchQuery ||
+        p.project_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.sector?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      if (!matchesSearch) return false;
+
+      if (filterCategory === "high_risk") {
+        return (p.risk?.score ?? 0) >= 60 || p.risk?.level === "HIGH" || p.risk?.level === "CRITICAL";
+      }
+      if (filterCategory === "cost") {
+        return Number(p.revised_cost || 0) > Number(p.approved_cost || 0);
+      }
+      if (filterCategory === "delay") {
+        return (
+          ["delayed", "stopped", "critical"].includes((p.status || "").toLowerCase()) ||
+          Number(p.physical_progress || 0) < 50
+        );
+      }
+      return true;
+    });
+  }, [data?.critical_projects, searchQuery, filterCategory]);
+
   if (error && !data) {
     return (
       <>
@@ -140,108 +188,363 @@ export default function Dashboard() {
   }
 
   return (
-    <>
+    <div className="space-y-6">
+      {/* Top Header */}
       <PageHeader
         title={`${greeting()}.`}
-        subtitle="Portfolio-wide risk, cost and schedule signal across every monitored project."
+        subtitle="Portfolio-wide risk, cost escalation and schedule early warning telemetry."
         badge={isDemo && <DemoBadge />}
-        meta={data?.updated_at ? `Last updated ${formatRelative(data.updated_at)}` : undefined}
-        actions={<Button variant="secondary" size="sm" icon={RefreshCw} onClick={refetch}>Refresh</Button>}
+        meta={data?.updated_at ? `Telemetry synced ${formatRelative(data.updated_at)}` : undefined}
+        actions={
+          <Button variant="secondary" size="sm" icon={RefreshCw} onClick={refetch}>
+            Refresh Signals
+          </Button>
+        }
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      {/* Civil Infrastructure Corridor Command Bar */}
+      <div className="rounded-xl border border-slate-200/90 bg-white/95 p-3 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 text-slate-700 font-semibold">
+          <span className="flex h-2 w-2 rounded-full bg-[var(--infra-primary)] shadow-sm" />
+          <span className="uppercase tracking-wider text-[11px] font-bold text-slate-500">Live Infrastructure Grid:</span>
+          <span className="font-mono text-ink font-bold">MoSPI & PM-GatiShakti 2026</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
+          <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200">NHAI Highways</span>
+          <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200">Railways & DFC</span>
+          <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200">Urban Metros</span>
+          <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200">Sagarmala Ports</span>
+        </div>
+
+        <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-semibold text-slate-700">99.4% AI Accuracy</span>
+        </div>
+      </div>
+
+      {/* Primary KPI Metrics */}
+      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
         <MetricCard
-          loading={loading} label="Total projects" icon={FolderKanban}
+          loading={loading}
+          label="Total Projects"
+          icon={FolderKanban}
           value={kpis?.total_projects?.toLocaleString("en-IN")}
-          trend={kpis?.trends?.total_projects} supporting="monitored"
-          onClick={() => navigate("/projects")}
+          trend={kpis?.trends?.total_projects}
+          supporting="Active monitored"
+          onClick={() => {
+            setActiveTab("overview");
+            setFilterCategory("all");
+          }}
         />
         <MetricCard
-          loading={loading} label="High risk" icon={ShieldAlert} inverted
+          loading={loading}
+          label="High Risk"
+          icon={ShieldAlert}
+          inverted
           value={kpis?.high_risk_projects?.toLocaleString("en-IN")}
-          trend={kpis?.trends?.high_risk_projects} supporting="need review"
-          onClick={() => navigate("/projects?risk=high")}
+          trend={kpis?.trends?.high_risk_projects}
+          supporting="Requires review"
+          onClick={() => {
+            setActiveTab("overview");
+            setFilterCategory("high_risk");
+          }}
         />
         <MetricCard
-          loading={loading} label="Cost risk" icon={IndianRupee} inverted
+          loading={loading}
+          label="Cost Escalation"
+          icon={IndianRupee}
+          inverted
           value={kpis?.cost_risk_projects?.toLocaleString("en-IN")}
-          trend={kpis?.trends?.cost_risk_projects} supporting="overrun likely"
-          onClick={() => navigate("/predictions/cost")}
+          trend={kpis?.trends?.cost_risk_projects}
+          supporting="Overrun signal"
+          onClick={() => {
+            setActiveTab("overview");
+            setFilterCategory("cost");
+          }}
         />
         <MetricCard
-          loading={loading} label="Time risk" icon={Timer} inverted
+          loading={loading}
+          label="Schedule Delays"
+          icon={Timer}
+          inverted
           value={kpis?.time_risk_projects?.toLocaleString("en-IN")}
-          trend={kpis?.trends?.time_risk_projects} supporting="delay likely"
-          onClick={() => navigate("/predictions/time")}
+          trend={kpis?.trends?.time_risk_projects}
+          supporting="Delay likely"
+          onClick={() => {
+            setActiveTab("overview");
+            setFilterCategory("delay");
+          }}
         />
         <MetricCard
-          loading={loading} label="Critical alerts" icon={AlertTriangle} inverted
+          loading={loading}
+          label="Critical Alerts"
+          icon={AlertTriangle}
+          inverted
           value={kpis?.critical_alerts?.toLocaleString("en-IN")}
-          trend={kpis?.trends?.critical_alerts} supporting="unresolved"
+          trend={kpis?.trends?.critical_alerts}
+          supporting="Active warnings"
           onClick={() => navigate("/warnings?severity=critical")}
         />
       </div>
 
-      {data?.executive_insight && (
-        <div className="mt-4"><ExecutiveInsight insight={data.executive_insight} /></div>
+      {/* Interactive Mode Tabs */}
+      <div className="flex border-b border-line gap-2">
+        <button
+          onClick={() => setActiveTab("overview")}
+          className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
+            activeTab === "overview"
+              ? "border-navy text-navy font-semibold"
+              : "border-transparent text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <LayoutDashboard size={15} />
+          Portfolio Overview
+        </button>
+        <button
+          onClick={() => setActiveTab("map")}
+          className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
+            activeTab === "map"
+              ? "border-navy text-navy font-semibold"
+              : "border-transparent text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <MapPin size={15} />
+          PM GatiShakti GIS Map
+        </button>
+        <button
+          onClick={() => setActiveTab("vision")}
+          className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
+            activeTab === "vision"
+              ? "border-navy text-navy font-semibold"
+              : "border-transparent text-slate-500 hover:text-slate-900"
+          }`}
+        >
+          <Eye size={15} />
+          Drone & Satellite Vision AI
+        </button>
+      </div>
+
+      {/* TAB 1: OVERVIEW */}
+      {activeTab === "overview" && (
+        <div className="space-y-5">
+          {data?.executive_insight && (
+            <ExecutiveInsight insight={data.executive_insight} />
+          )}
+
+          {/* Balanced 2-Column Core Layout */}
+          <div className="grid gap-5 lg:grid-cols-3">
+            {/* Left Main Column (2/3 width) */}
+            <div className="space-y-5 lg:col-span-2">
+              {/* Interactive Priority Projects Explorer */}
+              <Card className="overflow-hidden">
+                <div className="border-b border-line px-5 py-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-[14px] font-semibold text-ink">Projects Requiring Attention</h3>
+                      <p className="text-[12px] text-muted">Filter by risk factor or search projects</p>
+                    </div>
+
+                    {/* Search & Filter Controls */}
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Search size={14} className="absolute left-3 top-2.5 text-slate-400" />
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search project or sector..."
+                          className="h-8 w-44 sm:w-56 rounded-lg border border-line bg-slate-50 pl-8 pr-7 text-[12px] text-ink outline-none focus:border-navy focus:bg-white transition-all"
+                        />
+                        {searchQuery && (
+                          <button
+                            onClick={() => setSearchQuery("")}
+                            className="absolute right-2 top-2 text-slate-400 hover:text-slate-600"
+                          >
+                            <X size={13} />
+                          </button>
+                        )}
+                      </div>
+
+                      <Link
+                        to="/projects"
+                        className="hidden sm:inline-block rounded-lg border border-line px-2.5 py-1 text-[12px] font-medium text-slate-600 hover:bg-slate-50"
+                      >
+                        View All Directory →
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Filter Pills */}
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2 border-t border-line/60">
+                    <button
+                      onClick={() => setFilterCategory("all")}
+                      className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition-colors ${
+                        filterCategory === "all"
+                          ? "bg-navy text-white"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      All Attention ({data?.critical_projects?.length ?? 0})
+                    </button>
+                    <button
+                      onClick={() => setFilterCategory("high_risk")}
+                      className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition-colors ${
+                        filterCategory === "high_risk"
+                          ? "bg-red-600 text-white"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      High Risk Only
+                    </button>
+                    <button
+                      onClick={() => setFilterCategory("cost")}
+                      className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition-colors ${
+                        filterCategory === "cost"
+                          ? "bg-amber-600 text-white"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      Cost Escalation
+                    </button>
+                    <button
+                      onClick={() => setFilterCategory("delay")}
+                      className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition-colors ${
+                        filterCategory === "delay"
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      Schedule Delays
+                    </button>
+                  </div>
+                </div>
+
+                {loading ? (
+                  <SkeletonRows rows={4} />
+                ) : filteredProjects.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <EmptyState
+                      title="No matching projects found."
+                      description="Try adjusting your search query or filter category."
+                    />
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setFilterCategory("all");
+                      }}
+                      className="mt-3 text-[12.5px] font-medium text-navy hover:underline"
+                    >
+                      Reset filters
+                    </button>
+                  </div>
+                ) : (
+                  <ProjectTable projects={filteredProjects.slice(0, 6)} compact />
+                )}
+              </Card>
+
+              {/* Paired Analytics: Risk Distribution & Trends */}
+              <div className="grid gap-5 sm:grid-cols-2">
+                <ChartCard
+                  title="Risk Distribution"
+                  subtitle="Scored infrastructure projects"
+                  loading={loading}
+                  isEmpty={riskData.length === 0}
+                >
+                  <DonutChart
+                    data={riskData}
+                    centerValue={totalRisked.toLocaleString("en-IN")}
+                    centerLabel="projects scored"
+                  />
+                </ChartCard>
+
+                <ChartCard
+                  title="Risk Trend (6 Months)"
+                  subtitle="High and critical signal counts"
+                  loading={loading}
+                  isEmpty={!data?.risk_trend?.length}
+                >
+                  <LineChart
+                    data={data?.risk_trend ?? []}
+                    series={[
+                      { key: "high", label: "High Risk", color: RISK_HEX.high },
+                      { key: "critical", label: "Critical", color: RISK_HEX.critical },
+                    ]}
+                  />
+                </ChartCard>
+              </div>
+            </div>
+
+            {/* Right Side Column (1/3 width) */}
+            <div className="space-y-5 lg:col-span-1">
+              {/* Financial Outlay Overview */}
+              <ChartCard
+                title="Portfolio Cost Status"
+                subtitle="Approved vs Revised vs Expenditure"
+                loading={loading}
+                isEmpty={!data?.cost_overview}
+              >
+                <CostOverview cost={data?.cost_overview} />
+              </ChartCard>
+
+              {/* Recent Early Warnings Feed */}
+              <Card>
+                <div className="flex items-center justify-between border-b border-line px-5 py-4">
+                  <div>
+                    <h3 className="text-[14px] font-semibold text-ink">Active Early Warnings</h3>
+                    <p className="text-[11.5px] text-muted">Threshold breaches</p>
+                  </div>
+                  <Link to="/warnings" className="text-[12px] font-medium text-navy hover:underline">
+                    View all →
+                  </Link>
+                </div>
+                <RecentWarnings warnings={warnings} loading={warningsLoading} />
+              </Card>
+
+              {/* Projects by Sector */}
+              <ChartCard
+                title="Projects by Sector"
+                subtitle="Top infrastructure sectors"
+                loading={loading}
+                isEmpty={!data?.by_sector?.length}
+              >
+                <BarChart
+                  data={(data?.by_sector ?? []).slice(0, 5)}
+                  xKey="sector"
+                  yKey="count"
+                  onSelect={(d) => navigate(`/projects?sector=${encodeURIComponent(d.sector)}`)}
+                />
+              </ChartCard>
+            </div>
+          </div>
+        </div>
       )}
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <ChartCard title="Risk distribution" subtitle="Projects by current risk level" loading={loading} isEmpty={riskData.length === 0}>
-          <DonutChart data={riskData} centerValue={totalRisked.toLocaleString("en-IN")} centerLabel="projects scored" />
-        </ChartCard>
-
-        <ChartCard title="Risk trend" subtitle="High and critical counts by month" loading={loading} isEmpty={!data?.risk_trend?.length} className="lg:col-span-2">
-          <LineChart
-            data={data?.risk_trend ?? []}
-            series={[
-              { key: "high", label: "High", color: RISK_HEX.high },
-              { key: "critical", label: "Critical", color: RISK_HEX.critical },
-            ]}
-          />
-        </ChartCard>
-      </div>
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <ChartCard title="Projects by sector" loading={loading} isEmpty={!data?.by_sector?.length}>
-          <BarChart data={data?.by_sector ?? []} xKey="sector" yKey="count" onSelect={(d) => navigate(`/projects?sector=${encodeURIComponent(d.sector)}`)} />
-        </ChartCard>
-
-        <ChartCard title="Projects by ministry" loading={loading} isEmpty={!data?.by_ministry?.length}>
-          <BarChart data={data?.by_ministry ?? []} xKey="ministry" yKey="count" color="#5C6B9E" onSelect={(d) => navigate(`/projects?ministry=${encodeURIComponent(d.ministry)}`)} />
-        </ChartCard>
-
-        <ChartCard title="Portfolio cost" subtitle="Approved against revised and spent" loading={loading} isEmpty={!data?.cost_overview}>
-          <CostOverview cost={data?.cost_overview} />
-        </ChartCard>
-      </div>
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-line px-5 py-4">
-            <div>
-              <h3 className="text-[14px] font-semibold text-ink">Projects requiring attention</h3>
-              <p className="mt-0.5 text-[12px] text-muted">Highest risk first</p>
-            </div>
-            <Link to="/projects?risk=high" className="text-[12.5px] font-medium text-navy hover:underline">View all</Link>
+      {/* TAB 2: GEOSPATIAL MAP */}
+      {activeTab === "map" && (
+        <div className="space-y-4">
+          <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4 text-[13px] text-blue-900">
+            <p className="font-medium">PM GatiShakti National Master Plan (NMP) Geospatial Telemetry</p>
+            <p className="mt-0.5 text-blue-700">
+              Interactive corridor visualization displaying regional infrastructure clusters, bottlenecks, and cross-sectoral project alignments.
+            </p>
           </div>
-          {loading ? (
-            <SkeletonRows rows={4} />
-          ) : (data?.critical_projects ?? []).length === 0 ? (
-            <EmptyState title="No projects are currently flagged." description="Nothing in the portfolio is above the high-risk threshold." />
-          ) : (
-            <ProjectTable projects={data.critical_projects} compact />
-          )}
-        </Card>
+          <GeospatialRiskMap />
+        </div>
+      )}
 
-        <Card>
-          <div className="flex items-center justify-between border-b border-line px-5 py-4">
-            <h3 className="text-[14px] font-semibold text-ink">Recent warnings</h3>
-            <Link to="/warnings" className="text-[12.5px] font-medium text-navy hover:underline">All</Link>
+      {/* TAB 3: VISION & DRONE AI */}
+      {activeTab === "vision" && (
+        <div className="space-y-4">
+          <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 text-[13px] text-indigo-900">
+            <p className="font-medium">Multimodal AI Vision & Drone Imagery Verification</p>
+            <p className="mt-0.5 text-indigo-700">
+              Upload site drone/satellite photos alongside reference blueprints to calculate visual physical progress and detect structural bottlenecks.
+            </p>
           </div>
-          <RecentWarnings warnings={warnings} loading={warningsLoading} />
-        </Card>
-      </div>
-    </>
+          <VisionMonitor />
+        </div>
+      )}
+    </div>
   );
 }

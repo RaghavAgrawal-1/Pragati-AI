@@ -1,49 +1,78 @@
-import { api, tokenStore, ApiError } from "./apiClient";
+import { api, tokenStore } from "./apiClient";
 
 export const authService = {
   async login({ email, password, remember = true }) {
-    // Temporary hackathon authentication.
-    // Real JWT authentication can be connected later.
     if (!email || !password) {
-      throw new ApiError("Email and password are required.", 400);
+      throw new Error("Email and password are required.");
     }
 
-    const demoToken = `pragati-demo-${Date.now()}`;
+    const response = await api.post("/api/auth/login", {
+    email,
+    password,
+  });
 
-    tokenStore.set(demoToken);
-    localStorage.setItem("pragati.user.email", email);
+    tokenStore.set(response.access_token);
+
+    const user = response.user;
+
+    localStorage.setItem(
+      "pragati.user",
+      JSON.stringify(user)
+    );
 
     if (!remember) {
       sessionStorage.setItem("pragati.session-only", "1");
     }
 
     return {
-      token: demoToken,
-      user: {
-        email,
-        name: email.split("@")[0],
-        role: "Project Monitoring Officer",
-      },
+      token: response.access_token,
+      user,
     };
+  },
+
+  async signup({ name, email, password }) {
+    if (!name || !email || !password) {
+      throw new Error("Name, email and password are required.");
+    }
+
+    return api.post("/api/auth/signup", {
+    name,
+    email,
+    password,
+  });
   },
 
   async me() {
-    if (!tokenStore.get()) return null;
+    const token = tokenStore.get();
 
-    return {
-      email: localStorage.getItem("pragati.user.email") || "officer@pragati.ai",
-      name: "Project Monitoring Officer",
-      role: "Project Monitoring Officer",
-    };
+    if (!token) {
+      return null;
+    }
+
+    const storedUser = localStorage.getItem("pragati.user");
+
+    if (!storedUser) {
+      return null;
+    }
+
+    return JSON.parse(storedUser);
   },
 
   requestPasswordReset: async () => {
-    return { message: "Password reset is not enabled in demo mode." };
+    return {
+      message: "Password reset is not enabled yet.",
+    };
   },
 
   resetPassword: async () => {
-    return { message: "Password reset is not enabled in demo mode." };
+    return {
+      message: "Password reset is not enabled yet.",
+    };
   },
 
-  logout: () => tokenStore.clear(),
+  logout: () => {
+    tokenStore.clear();
+    localStorage.removeItem("pragati.user");
+    sessionStorage.removeItem("pragati.session-only");
+  },
 };
