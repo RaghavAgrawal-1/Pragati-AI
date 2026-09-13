@@ -15,7 +15,7 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = "Co
         </>
       }
     >
-      <p className="text-[13px] leading-relaxed text-slate-600">{message}</p>
+      <p className="text-[13px] leading-relaxed text-muted">{message}</p>
     </Modal>
   );
 }

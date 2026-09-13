@@ -1,5 +1,5 @@
 import { useLocation, Link } from "react-router-dom";
-import { Menu, Search, Sparkles, Activity, Compass, Bell } from "lucide-react";
+import { Menu, Search, Sparkles, Compass } from "lucide-react";
 import { NAV_GROUPS } from "../../constants/navigation";
 import UserMenu from "./UserMenu";
 import NotificationMenu from "./NotificationMenu";
@@ -53,11 +53,11 @@ export default function Navbar({ onOpenMobileNav }) {
         {/* Quick Search Bar */}
         <Link
           to="/projects"
-          className="hidden md:flex items-center gap-2.5 rounded-lg border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 text-xs text-slate-500 hover:border-slate-300 hover:bg-white hover:text-slate-800 transition-all shadow-sm"
+          className="hidden md:flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[12px] text-muted hover:border-white/[0.14] hover:bg-white/[0.08] hover:text-ink transition-all"
         >
-          <Search size={14} className="text-slate-400" />
+          <Search size={14} className="text-muted" />
           <span className="text-[12px]">Search projects, risks, agencies...</span>
-          <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 font-mono text-[10px] text-slate-400 shadow-xs">
+          <kbd className="rounded border border-white/[0.1] bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-muted">
             ⌘K
           </kbd>
         </Link>
@@ -65,24 +65,24 @@ export default function Navbar({ onOpenMobileNav }) {
         {/* Quick Action: AI Assistant */}
         <Link
           to="/assistant"
-          className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 px-3 py-1.5 text-[12px] font-semibold text-amber-900 hover:bg-amber-500/15 hover:border-amber-500/50 transition-all shadow-xs"
+          className="flex items-center gap-1.5 rounded-xl bg-orange/15 border border-orange/30 px-3 py-1.5 text-[12px] font-semibold text-orange hover:bg-orange/25 hover:border-orange/50 transition-all"
           title="Open AI Engineering Assistant"
         >
-          <Sparkles size={14} className="text-amber-600 animate-pulse" />
+          <Sparkles size={14} className="text-orange animate-pulse" />
           <span className="hidden sm:inline">AI Copilot</span>
         </Link>
 
         {/* Quick Action: CAD Studio */}
         <Link
           to="/blueprint"
-          className="hidden lg:flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[12px] font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors shadow-xs"
+          className="hidden lg:flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04] px-2.5 py-1.5 text-[12px] font-medium text-slate-300 hover:bg-white/[0.08] hover:text-ink transition-colors"
           title="Open AI CAD Blueprint Studio"
         >
-          <Compass size={14} className="text-cyan-600" />
+          <Compass size={14} className="text-cyan-400" />
           <span>CAD Studio</span>
         </Link>
 
-        <div className="h-5 w-px bg-slate-200" aria-hidden="true" />
+        <div className="h-4 w-px bg-white/[0.08]" aria-hidden="true" />
 
         <NotificationMenu />
         <UserMenu />
