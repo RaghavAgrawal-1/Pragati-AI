@@ -8,8 +8,8 @@ import { isEmail } from "../../utils/validation";
 function TextGlow() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute -left-16 -top-10 h-64 w-64 rounded-full bg-[#AEB9E6]/40 blur-[70px]" />
-      <div className="absolute left-24 top-4 h-44 w-56 rounded-full bg-[#D9D3F0]/50 blur-[60px]" />
+      <div className="absolute -left-16 -top-10 h-64 w-64 rounded-full bg-orange/[0.07] blur-[70px]" />
+      <div className="absolute left-24 top-4 h-44 w-56 rounded-full bg-orange/[0.05] blur-[60px]" />
     </div>
   );
 }
@@ -61,17 +61,17 @@ export default function LoginForm() {
       <TextGlow />
 
       <div className="relative">
-        <h1 className="text-[27px] font-light leading-[1.08] tracking-tight lg:text-[33px]">Welcome back.</h1>
+        <h1 className="text-[27px] font-light leading-[1.08] tracking-tight text-ink lg:text-[33px]">Welcome back.</h1>
         <p className="mb-5 mt-2.5 max-w-[34ch] text-[13px] leading-relaxed text-muted">
           Sign in to continue monitoring your projects smarter.
         </p>
 
         <form onSubmit={handleSubmit} noValidate>
           {status === "error" && (
-            <div role="alert" className="mb-3.5 flex items-start gap-2.5 rounded-xl border border-danger/20 bg-[#FDF6F5] px-3.5 py-2.5 text-[12.5px] leading-relaxed text-[#8E443E]">
+            <div role="alert" className="mb-3.5 flex items-start gap-2.5 rounded-xl border border-red-500/20 bg-red-500/[0.06] px-3.5 py-2.5 text-[12.5px] leading-relaxed text-red-300">
               <svg width="15" height="15" viewBox="0 0 16 16" fill="none" className="mt-px shrink-0" aria-hidden="true">
-                <circle cx="8" cy="8" r="6.6" stroke="#B4554E" strokeWidth="1.2" />
-                <path d="M8 4.8v3.6M8 11h.01" stroke="#B4554E" strokeWidth="1.4" strokeLinecap="round" />
+                <circle cx="8" cy="8" r="6.6" stroke="#EF4444" strokeWidth="1.2" />
+                <path d="M8 4.8v3.6M8 11h.01" stroke="#EF4444" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
               <span>{serverError}</span>
             </div>
@@ -92,7 +92,7 @@ export default function LoginForm() {
 
           <div className="mb-4 mt-0.5 flex items-center justify-between">
             <label className="flex cursor-pointer select-none items-center gap-2.5 text-[12.5px] text-muted">
-              <span className={`grid h-[17px] w-[17px] place-items-center rounded-[5px] border transition-colors ${remember ? "border-navy bg-navy" : "border-[#D7D9E4] bg-white"}`}>
+              <span className={`grid h-[17px] w-[17px] place-items-center rounded-[5px] border transition-colors ${remember ? "border-orange bg-orange" : "border-white/[0.12] bg-white/[0.04]"}`}>
                 {remember && (
                   <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                     <path d="M2.5 6.3l2.3 2.3L9.5 3.9" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
@@ -103,15 +103,15 @@ export default function LoginForm() {
               Keep me signed in
             </label>
 
-            <Link to="/forgot-password" className="border-b border-transparent pb-px text-[12.5px] text-muted transition-colors hover:border-[#C9CDDA] hover:text-ink">
+            <Link to="/forgot-password" className="border-b border-transparent pb-px text-[12.5px] text-muted transition-colors hover:border-white/[0.2] hover:text-ink">
               Forgot password?
             </Link>
           </div>
 
           <button
             type="submit" disabled={!ready || loading}
-            className="flex h-[48px] w-full items-center justify-center gap-2.5 rounded-field bg-gradient-to-br from-navy-deep to-navy-soft
-                       text-sm font-medium text-white shadow-submit transition-all hover:-translate-y-px active:translate-y-0
+            className="flex h-[46px] w-full items-center justify-center gap-2.5 rounded-xl bg-orange
+                       text-[13.5px] font-semibold text-white shadow-submit transition-all hover:bg-orange-light hover:-translate-y-px active:translate-y-0
                        disabled:pointer-events-none disabled:opacity-45 disabled:shadow-none"
           >
             {loading ? (
@@ -119,7 +119,7 @@ export default function LoginForm() {
                 <span className="h-[15px] w-[15px] animate-spin rounded-full border-2 border-white/35 border-t-white" />
                 Signing in
               </>
-            ) : "Sign in"}
+            ) : "Sign in to Pragati AI"}
           </button>
         </form>
 

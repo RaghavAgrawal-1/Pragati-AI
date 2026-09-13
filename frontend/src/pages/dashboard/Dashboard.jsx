@@ -391,15 +391,15 @@ export default function Dashboard() {
 
                     {/* Search & Filter Controls */}
                     <div className="flex items-center gap-2">
-                      <div className="relative">
-                        <Search size={14} className="absolute left-3 top-2.5 text-slate-400" />
-                        <input
-                          type="text"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          placeholder="Search project or sector..."
-                          className="h-8 w-44 sm:w-56 rounded-lg border border-line bg-slate-50 pl-8 pr-7 text-[12px] text-ink outline-none focus:border-navy focus:bg-white transition-all"
-                        />
+                        <div className="relative">
+                          <Search size={14} className="absolute left-3 top-2.5 text-muted" />
+                          <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search project or sector..."
+                            className="h-8 w-44 sm:w-56 rounded-lg border border-white/[0.08] bg-white/[0.05] pl-8 pr-7 text-[12px] text-ink placeholder:text-muted outline-none focus:border-orange/50 focus:bg-white/[0.08] transition-all"
+                          />
                         {searchQuery && (
                           <button
                             onClick={() => setSearchQuery("")}
@@ -412,7 +412,7 @@ export default function Dashboard() {
 
                       <Link
                         to="/projects"
-                        className="hidden sm:inline-block rounded-lg border border-line px-2.5 py-1 text-[12px] font-medium text-slate-600 hover:bg-slate-50"
+                        className="hidden sm:inline-block rounded-lg border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[12px] font-medium text-muted hover:text-ink hover:bg-white/[0.08] transition-colors"
                       >
                         View All Directory →
                       </Link>
@@ -533,12 +533,12 @@ export default function Dashboard() {
 
               {/* Recent Early Warnings Feed */}
               <Card>
-                <div className="flex items-center justify-between border-b border-line px-5 py-4">
+                <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
                   <div>
                     <h3 className="text-[14px] font-semibold text-ink">Active Early Warnings</h3>
                     <p className="text-[11.5px] text-muted">Threshold breaches</p>
                   </div>
-                  <Link to="/warnings" className="text-[12px] font-medium text-navy hover:underline">
+                  <Link to="/warnings" className="text-[12px] font-medium text-orange hover:text-orange-light transition-colors">
                     View all →
                   </Link>
                 </div>

@@ -2,7 +2,7 @@ export default function PasswordToggle({ visible, onToggle }) {
   return (
     <button
       type="button" onClick={onToggle} aria-label={visible ? "Hide password" : "Show password"}
-      className="absolute right-1.5 top-1 grid h-10 w-10 place-items-center rounded-[10px] text-[#8A90A2] transition-colors hover:bg-[#F2F3F8] hover:text-ink"
+      className="absolute right-1.5 top-1 grid h-10 w-10 place-items-center rounded-[10px] text-muted transition-colors hover:bg-white/[0.06] hover:text-ink"
     >
       {visible ? (
         <svg width="17" height="17" viewBox="0 0 20 20" fill="none" aria-hidden="true">
