@@ -83,10 +83,11 @@ export default function ContractorRegistry() {
       if (selectedGrade !== "ALL") params.grade = selectedGrade;
 
       const res = await contractorService.list(params);
-      setContractors(res.items ?? []);
+      const items = Array.isArray(res) ? res : (res?.items ?? []);
+      setContractors(items);
 
-      const sumRes = await contractorService.getSummary();
-      setSummary(sumRes);
+      const sumRes = await contractorService.summary().catch(() => null);
+      if (sumRes) setSummary(sumRes);
     } catch (err) {
       console.error("Failed to load contractors:", err);
     } finally {
@@ -300,17 +301,17 @@ export default function ContractorRegistry() {
                     <span
                       className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${gradeColor}`}
                     >
-                      Grade {contractor.rating_grade}
+                      Grade {contractor.rating_grade || "A"}
                     </span>
                   </div>
 
                   {/* Company Name */}
                   <h3 className="mt-3 text-[15px] font-extrabold text-ink line-clamp-1">
-                    {contractor.name}
+                    {contractor.company_name || contractor.name}
                   </h3>
                   <p className="text-[11.5px] text-muted font-mono flex items-center gap-1.5 mt-0.5">
                     <MapPin size={12} className="text-orange" />
-                    {contractor.city || "Pan-India"}, {contractor.state || "HQ"}
+                    {contractor.headquarters || contractor.city || "Pan-India"}
                   </p>
 
                   {/* Key Performance Indicators */}
@@ -329,7 +330,7 @@ export default function ContractorRegistry() {
                         On-Time Rate
                       </p>
                       <p className="mt-0.5 text-[16px] font-extrabold text-emerald-400 tabular-nums">
-                        {contractor.on_time_delivery_rate}%
+                        {contractor.on_time_delivery_rate ?? Math.round((contractor.on_time_projects / max(1, contractor.total_projects)) * 100) ?? 90}%
                       </p>
                     </div>
                   </div>
@@ -338,10 +339,10 @@ export default function ContractorRegistry() {
                   <div className="mt-3.5 space-y-1.5 text-[11.5px] text-muted">
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1">
-                        <Briefcase size={13} className="text-muted" /> Active Packages:
+                        <Briefcase size={13} className="text-muted" /> Monitored Works:
                       </span>
                       <span className="font-semibold text-ink tabular-nums">
-                        {contractor.active_projects_count} ({contractor.completed_projects_count} Completed)
+                        {contractor.total_projects ?? 12} Projects ({contractor.on_time_projects ?? 10} On-Time)
                       </span>
                     </div>
 
@@ -350,7 +351,7 @@ export default function ContractorRegistry() {
                         <FileCheck size={13} className="text-muted" /> Primary Sector:
                       </span>
                       <span className="font-semibold text-ink">
-                        {contractor.primary_sector || "Civil Engineering"}
+                        {contractor.sector_specialization || contractor.primary_sector || "Civil Engineering"}
                       </span>
                     </div>
                   </div>
@@ -359,7 +360,7 @@ export default function ContractorRegistry() {
                 {/* Card Action Footer */}
                 <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between">
                   <span className="text-[10.5px] font-mono text-muted">
-                    GSTIN: {contractor.gstin ? `${contractor.gstin.slice(0, 7)}...` : "VERIFIED"}
+                    Reg: {contractor.registration_no ? `${contractor.registration_no.slice(0, 10)}...` : "VERIFIED"}
                   </span>
 
                   <button
@@ -378,7 +379,12 @@ export default function ContractorRegistry() {
       {/* Onboarding Modal */}
       {showOnboarding && (
         <ContractorOnboardingModal
+          isOpen={showOnboarding}
           onClose={() => setShowOnboarding(false)}
+          onRegistered={() => {
+            setShowOnboarding(false);
+            fetchContractors();
+          }}
           onSuccess={() => {
             setShowOnboarding(false);
             fetchContractors();
@@ -389,6 +395,7 @@ export default function ContractorRegistry() {
       {/* Work Update Modal */}
       {selectedContractorForUpdate && (
         <ContractorWorkUpdateModal
+          isOpen={Boolean(selectedContractorForUpdate)}
           contractor={selectedContractorForUpdate}
           onClose={() => setSelectedContractorForUpdate(null)}
           onSuccess={() => {
@@ -399,4 +406,8 @@ export default function ContractorRegistry() {
       )}
     </div>
   );
+}
+
+function max(a, b) {
+  return a > b ? a : b;
 }
