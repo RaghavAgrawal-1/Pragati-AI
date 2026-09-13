@@ -678,37 +678,37 @@ export default function ProjectDetails() {
 
         {/* Vision Results */}
         {visionResult?.success && (
-          <div className="mt-5 border-t border-line pt-5">
+          <div className="mt-5 border-t border-white/[0.08] pt-5">
 
             {/* Metrics */}
             <div className="grid gap-4 md:grid-cols-3">
 
-              <div className="rounded-lg bg-slate-50 p-4">
-                <p className="text-[11px] text-muted">
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
                   Visual Progress
                 </p>
 
-                <p className="mt-1 text-2xl font-semibold text-ink">
+                <p className="mt-1 text-2xl font-extrabold text-orange tabular-nums">
                   {visionResult.progress?.percentage ?? 0}%
                 </p>
               </div>
 
-              <div className="rounded-lg bg-slate-50 p-4">
-                <p className="text-[11px] text-muted">
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
                   Current Stage
                 </p>
 
-                <p className="mt-2 text-[14px] font-semibold text-ink">
+                <p className="mt-2 text-[14px] font-bold text-ink">
                   {visionResult.progress?.status ?? "Unknown"}
                 </p>
               </div>
 
-              <div className="rounded-lg bg-slate-50 p-4">
-                <p className="text-[11px] text-muted">
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted">
                   AI Confidence
                 </p>
 
-                <p className="mt-2 text-[14px] font-semibold text-ink">
+                <p className="mt-2 text-[14px] font-extrabold text-emerald-400 tabular-nums">
                   {visionResult.progress?.confidence ?? 0}%
                 </p>
               </div>
@@ -718,18 +718,18 @@ export default function ProjectDetails() {
             {/* Progress Bar */}
             <div className="mt-5">
               <div className="mb-2 flex justify-between text-[11px]">
-                <span className="font-medium text-ink">
+                <span className="font-bold text-ink">
                   AI Estimated Physical Progress
                 </span>
 
-                <span className="text-muted">
+                <span className="font-mono text-orange font-bold">
                   {visionResult.progress?.percentage ?? 0}%
                 </span>
               </div>
 
-              <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-2.5 overflow-hidden rounded-full bg-white/[0.08] border border-white/[0.06]">
                 <div
-                  className="h-full rounded-full bg-navy transition-all duration-700"
+                  className="h-full rounded-full bg-orange shadow-[0_0_12px_rgba(232,84,24,0.6)] transition-all duration-700"
                   style={{
                     width: `${Math.min(
                       Math.max(
@@ -748,8 +748,8 @@ export default function ProjectDetails() {
             {/* Stages */}
             <div className="mt-5 grid gap-4 md:grid-cols-3">
 
-              <div>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted">
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5">
+                <p className="mb-2.5 text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">
                   Completed
                 </p>
 
@@ -757,9 +757,9 @@ export default function ProjectDetails() {
                   visionResult.stages.completed.map((stage) => (
                     <div
                       key={stage}
-                      className="mb-1.5 flex items-center gap-2 text-[12.5px] text-ink"
+                      className="mb-1.5 flex items-center gap-2 text-[12.5px] font-medium text-ink"
                     >
-                      <CheckCircle2 size={14} />
+                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
                       {stage}
                     </div>
                   ))
@@ -770,8 +770,8 @@ export default function ProjectDetails() {
                 )}
               </div>
 
-              <div>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted">
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5">
+                <p className="mb-2.5 text-[11px] font-extrabold uppercase tracking-wider text-orange">
                   In Progress
                 </p>
 
@@ -779,7 +779,7 @@ export default function ProjectDetails() {
                   visionResult.stages.in_progress.map((stage) => (
                     <div
                       key={stage}
-                      className="mb-1.5 text-[12.5px] text-ink"
+                      className="mb-1.5 text-[12.5px] font-semibold text-ink"
                     >
                       • {stage}
                     </div>
@@ -791,8 +791,8 @@ export default function ProjectDetails() {
                 )}
               </div>
 
-              <div>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted">
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5">
+                <p className="mb-2.5 text-[11px] font-extrabold uppercase tracking-wider text-muted">
                   Remaining
                 </p>
 
@@ -800,7 +800,7 @@ export default function ProjectDetails() {
                   visionResult.stages.remaining.map((stage) => (
                     <div
                       key={stage}
-                      className="mb-1.5 text-[12.5px] text-muted"
+                      className="mb-1.5 text-[12.5px] font-medium text-muted"
                     >
                       • {stage}
                     </div>
@@ -816,17 +816,17 @@ export default function ProjectDetails() {
 
             {/* Key Issues */}
             {visionResult.key_issues?.length > 0 && (
-              <div className="mt-5 rounded-xl border border-risk-high/10 bg-risk-high/5 p-4">
-                <div className="flex items-center gap-2 text-[12px] font-semibold text-ink">
-                  <AlertTriangle size={15} />
+              <div className="mt-5 rounded-xl border border-red-500/25 bg-red-500/[0.08] p-4">
+                <div className="flex items-center gap-2 text-[13px] font-bold text-red-400">
+                  <AlertTriangle size={16} className="text-red-400 shrink-0" />
                   Key Issues Detected
                 </div>
 
-                <ul className="mt-2 space-y-1.5">
+                <ul className="mt-2.5 space-y-1.5">
                   {visionResult.key_issues.map((issue) => (
                     <li
                       key={issue}
-                      className="text-[12.5px] leading-relaxed text-muted"
+                      className="text-[12.5px] leading-relaxed text-red-200/90 font-medium"
                     >
                       • {issue}
                     </li>
@@ -837,16 +837,16 @@ export default function ProjectDetails() {
 
             {/* Recommendation */}
             {visionResult.recommendation && (
-              <div className="mt-4 rounded-xl border border-navy/10 bg-[#F7F8FC] p-4">
+              <div className="mt-4 rounded-xl border border-orange/25 bg-orange/[0.08] p-4">
                 <div className="flex items-center gap-2">
-                  <Sparkles size={14} className="text-navy" />
+                  <Sparkles size={15} className="text-orange shrink-0" />
 
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted">
+                  <p className="text-[11px] font-extrabold uppercase tracking-wider text-orange">
                     AI Vision Recommendation
                   </p>
                 </div>
 
-                <p className="mt-2 text-[12.5px] leading-relaxed text-ink">
+                <p className="mt-2 text-[12.5px] leading-relaxed text-ink font-medium">
                   {visionResult.recommendation}
                 </p>
               </div>
