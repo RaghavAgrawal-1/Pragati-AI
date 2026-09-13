@@ -45,6 +45,15 @@
   body { @apply bg-canvas text-ink font-sans; }
   :focus-visible { outline: 2px solid var(--infra-primary); outline-offset: 2px; }
 
+  /* Guarantee high-contrast inputs and native select dropdowns */
+  select, option {
+    background-color: #1A1B25 !important;
+    color: #F0F2F8 !important;
+  }
+  input, textarea {
+    color: #F0F2F8;
+  }
+
   /* Smooth transitions on all interactive elements */
   a, button, input, select, textarea {
     transition-property: color, background-color, border-color, box-shadow, opacity, transform;
