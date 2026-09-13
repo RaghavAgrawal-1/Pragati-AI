@@ -1,14 +1,35 @@
 from datetime import date
 import app.models
+from app.core.security import hash_password
 from app.db.database import Base, engine
 from app.db.session import SessionLocal
 from app.models.project import Project
+from app.models.user import User
 
 
 def init_db():
     Base.metadata.create_all(bind=engine)
     try:
         with SessionLocal() as db:
+            if db.query(User).count() == 0:
+                demo_users = [
+                    User(
+                        name="Project Officer",
+                        email="admin@pragati.ai",
+                        password_hash=hash_password("password123"),
+                        role="Project Monitoring Officer",
+                    ),
+                    User(
+                        name="Officer in Charge",
+                        email="officer@pragati.gov.in",
+                        password_hash=hash_password("password123"),
+                        role="Project Monitoring Officer",
+                    ),
+                ]
+                db.add_all(demo_users)
+                db.commit()
+                print("Seeded demo users successfully.", flush=True)
+
             if db.query(Project).count() == 0:
                 demo_projects = [
                     Project(
