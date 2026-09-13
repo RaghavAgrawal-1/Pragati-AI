@@ -38,17 +38,27 @@ export default function ContractorOnboardingModal({ isOpen, onClose, onRegistere
     setError("");
 
     try {
-      const result = await contractorService.register({
-        ...formData,
+      const payload = {
+        company_name: formData.company_name.trim(),
+        registration_no: formData.registration_no.trim(),
+        contractor_class: formData.contractor_class || "Class-A Highway & Rail EPC",
+        sector_specialization: formData.sector_specialization || "Highways & Expressways",
+        headquarters: formData.headquarters.trim() || "Pan-India HQ",
+        contact_email: formData.contact_email.trim() || null,
+        contact_phone: formData.contact_phone.trim() || null,
         established_year: parseInt(formData.established_year, 10) || 2020,
-      });
+        initial_project_name: formData.initial_project_name.trim() || null,
+        experience_summary: formData.experience_summary.trim() || null,
+      };
+
+      const result = await contractorService.register(payload);
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);
         if (onRegistered) onRegistered(result);
         if (onSuccess) onSuccess(result);
         onClose();
-      }, 1200);
+      }, 1000);
     } catch (err) {
       setError(err.message || "Failed to register contractor. Please check details.");
     } finally {

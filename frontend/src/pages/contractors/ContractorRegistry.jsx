@@ -72,15 +72,19 @@ export default function ContractorRegistry() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedContractorForUpdate, setSelectedContractorForUpdate] = useState(null);
 
-  const fetchContractors = async () => {
+  const fetchContractors = async (customParams = {}) => {
     setLoading(true);
     try {
+      const activeSearch = customParams.search !== undefined ? customParams.search : search;
+      const activeSector = customParams.sector !== undefined ? customParams.sector : selectedSector;
+      const activeGrade = customParams.grade !== undefined ? customParams.grade : selectedGrade;
+
       const params = {
         sort_by: sortBy,
       };
-      if (search.trim()) params.query = search.trim();
-      if (selectedSector !== "ALL") params.sector = selectedSector;
-      if (selectedGrade !== "ALL") params.grade = selectedGrade;
+      if (activeSearch && activeSearch.trim()) params.search = activeSearch.trim();
+      if (activeSector && activeSector !== "ALL") params.sector = activeSector;
+      if (activeGrade && activeGrade !== "ALL") params.grade = activeGrade;
 
       const res = await contractorService.list(params);
       const items = Array.isArray(res) ? res : (res?.items ?? []);
@@ -102,6 +106,22 @@ export default function ContractorRegistry() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     fetchContractors();
+  };
+
+  const handleContractorRegistered = (newContractor) => {
+    setShowOnboarding(false);
+    setSearch("");
+    setSelectedSector("ALL");
+    setSelectedGrade("ALL");
+
+    if (newContractor && newContractor.id) {
+      setContractors((prev) => [
+        newContractor,
+        ...prev.filter((c) => c.id !== newContractor.id),
+      ]);
+    }
+
+    fetchContractors({ search: "", sector: "ALL", grade: "ALL" });
   };
 
   return (
@@ -267,14 +287,29 @@ export default function ContractorRegistry() {
           <p className="mt-1 text-[12px] text-muted">
             Try adjusting your search filters or register a new contractor.
           </p>
-          <Button
-            variant="primary"
-            size="sm"
-            className="mt-4"
-            onClick={() => setShowOnboarding(true)}
-          >
-            Register Contractor
-          </Button>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            {(search || selectedSector !== "ALL" || selectedGrade !== "ALL") && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSearch("");
+                  setSelectedSector("ALL");
+                  setSelectedGrade("ALL");
+                  fetchContractors({ search: "", sector: "ALL", grade: "ALL" });
+                }}
+              >
+                Clear Filters
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setShowOnboarding(true)}
+            >
+              Register Contractor
+            </Button>
+          </div>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -381,14 +416,8 @@ export default function ContractorRegistry() {
         <ContractorOnboardingModal
           isOpen={showOnboarding}
           onClose={() => setShowOnboarding(false)}
-          onRegistered={() => {
-            setShowOnboarding(false);
-            fetchContractors();
-          }}
-          onSuccess={() => {
-            setShowOnboarding(false);
-            fetchContractors();
-          }}
+          onRegistered={handleContractorRegistered}
+          onSuccess={handleContractorRegistered}
         />
       )}
 
