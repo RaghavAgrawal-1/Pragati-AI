@@ -1,19 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ClipboardCheck,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Plus,
-  Filter,
-  Search,
-  ArrowRight,
-  ShieldAlert,
-  Kanban,
-  List,
-  Sparkles,
-  Building2,
+  ClipboardCheck, CheckCircle2, Clock, AlertCircle, Plus, Filter,
+  Search, ArrowRight, ShieldAlert, Kanban, List, Sparkles, Building2,
 } from "lucide-react";
 import PageHeader from "../../components/layout/PageHeader";
 import Card from "../../components/common/Card";
@@ -79,8 +68,14 @@ export default function Interventions() {
     if (!formData.project_name || !formData.action) return;
 
     try {
-      const created = await api.post("/api/interventions", formData);
-      setItems((prev) => [created, ...prev]);
+      const newItem = {
+        ...formData,
+        id: `INT-${Date.now().toString().slice(-4)}`,
+        status: "Open",
+        created_at: new Date().toISOString(),
+      };
+
+      setItems([newItem, ...items]);
       setShowForm(false);
       setFormData({
         project_name: "",
@@ -91,6 +86,8 @@ export default function Interventions() {
         deadline: "15 Oct 2026",
         bottleneck_category: "Land Acquisition",
       });
+
+      await api.post("/api/interventions", newItem);
     } catch (err) {
       console.error("Failed to create intervention:", err);
     }
@@ -98,8 +95,9 @@ export default function Interventions() {
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      if (categoryFilter !== "ALL" && item.bottleneck_category !== categoryFilter) return false;
-
+      if (categoryFilter !== "ALL" && item.bottleneck_category !== categoryFilter) {
+        return false;
+      }
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
@@ -113,115 +111,77 @@ export default function Interventions() {
     });
   }, [items, categoryFilter, searchQuery]);
 
-  const kanbanColumns = [
-    {
-      title: "1. AI Flagged / Pending Review",
-      key: "Open",
-      filterFn: (i) => i.status === "Open" || !i.status,
-      accent: "border-t-amber-500",
-      badgeColor: "bg-amber-100 text-amber-800",
-    },
-    {
-      title: "2. Under PM GatiShakti NPG Action",
-      key: "In Progress",
-      filterFn: (i) => i.status === "In Progress" || i.status === "Assigned",
-      accent: "border-t-primary-500",
-      badgeColor: "bg-primary-100 text-primary-800",
-    },
-    {
-      title: "3. Inter-Ministerial Cleared / Resolved",
-      key: "Completed",
-      filterFn: (i) => i.status === "Completed" || i.status === "Resolved",
-      accent: "border-t-emerald-500",
-      badgeColor: "bg-emerald-100 text-emerald-800",
-    },
-  ];
+  // Kanban column grouping
+  const kanbanColumns = useMemo(
+    () => ({
+      open: filteredItems.filter((i) => i.status === "Open" || !i.status),
+      inProgress: filteredItems.filter((i) => i.status === "In Progress" || i.status === "Assigned"),
+      resolved: filteredItems.filter((i) => i.status === "Completed" || i.status === "Resolved"),
+    }),
+    [filteredItems]
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-slideUp">
       <PageHeader
-        title="PM GatiShakti Prescriptive Action Board"
-        subtitle="Empowered Network Planning Group (NPG) operational workflow resolving statutory and cross-ministerial bottlenecks."
+        title="Inter-Agency Interventions & Directive Tracker"
+        subtitle="PM GatiShakti Nodal Planning Group (NPG) action items, statutory clearance tracking, and bottleneck resolution directives."
       />
 
-      {/* KPI METRICS */}
+      {/* KPI STATS */}
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-        <Card className="p-4 border-l-4 border-l-primary-500">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-            Total Mitigations
-          </p>
-          <p className="mt-1.5 text-2xl font-bold text-slate-900">
-            {loading ? "—" : counts.total}
-          </p>
-          <p className="mt-0.5 text-xs text-slate-500">Prescriptive directives generated</p>
-        </Card>
+        <div className="rounded-2xl border-l-4 border-l-orange border border-white/[0.06] bg-surface-card p-4">
+          <p className="text-[10.5px] font-bold uppercase tracking-widest text-orange">Total Mitigations</p>
+          <p className="mt-1.5 text-[26px] font-extrabold tabular-nums text-ink">{loading ? "—" : counts.total}</p>
+          <p className="mt-1 text-[11px] text-muted">Prescriptive directives generated</p>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-amber-500">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-600">
-            Flagged & Pending
-          </p>
-          <p className="mt-1.5 text-2xl font-bold text-amber-600">
-            {loading ? "—" : counts.open}
-          </p>
-          <p className="mt-0.5 text-xs text-slate-500">Awaiting officer allocation</p>
-        </Card>
+        <div className="rounded-2xl border-l-4 border-l-amber-500 border border-white/[0.06] bg-surface-card p-4">
+          <p className="text-[10.5px] font-bold uppercase tracking-widest text-amber-400">Flagged & Pending</p>
+          <p className="mt-1.5 text-[26px] font-extrabold tabular-nums text-amber-400">{loading ? "—" : counts.open}</p>
+          <p className="mt-1 text-[11px] text-muted">Awaiting officer allocation</p>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-blue-500">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-600">
-            NPG Active Scrutiny
-          </p>
-          <p className="mt-1.5 text-2xl font-bold text-blue-600">
-            {loading ? "—" : counts.inProgress}
-          </p>
-          <p className="mt-0.5 text-xs text-slate-500">Inter-agency review underway</p>
-        </Card>
+        <div className="rounded-2xl border-l-4 border-l-blue-500 border border-white/[0.06] bg-surface-card p-4">
+          <p className="text-[10.5px] font-bold uppercase tracking-widest text-blue-400">NPG Active Scrutiny</p>
+          <p className="mt-1.5 text-[26px] font-extrabold tabular-nums text-blue-400">{loading ? "—" : counts.inProgress}</p>
+          <p className="mt-1 text-[11px] text-muted">Inter-agency review underway</p>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-emerald-500">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600">
-            Resolved & Cleared
-          </p>
-          <p className="mt-1.5 text-2xl font-bold text-emerald-600">
-            {loading ? "—" : counts.resolved}
-          </p>
-          <p className="mt-0.5 text-xs text-slate-500">Bottlenecks expedited</p>
-        </Card>
+        <div className="rounded-2xl border-l-4 border-l-emerald-500 border border-white/[0.06] bg-surface-card p-4">
+          <p className="text-[10.5px] font-bold uppercase tracking-widest text-emerald-400">Resolved & Cleared</p>
+          <p className="mt-1.5 text-[26px] font-extrabold tabular-nums text-emerald-400">{loading ? "—" : counts.resolved}</p>
+          <p className="mt-1 text-[11px] text-muted">Bottlenecks expedited</p>
+        </div>
       </div>
 
       {/* CONTROLS BAR */}
       <Card className="p-4 space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
             <input
               type="text"
               placeholder="Search interventions by project, bottleneck, or action..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 pl-9 pr-4 py-2 text-xs focus:border-primary-500 focus:outline-none"
+              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.05] pl-9 pr-4 py-2 text-[12.5px] text-ink placeholder:text-muted outline-none focus:border-orange/50 transition-all"
             />
           </div>
 
           <div className="flex items-center gap-2">
             {/* View Mode Switcher */}
-            <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50 p-1">
+            <div className="flex items-center rounded-xl border border-white/[0.08] bg-white/[0.04] p-1">
               <button
                 onClick={() => setViewMode("kanban")}
-                className={`rounded p-1.5 transition ${
-                  viewMode === "kanban"
-                    ? "bg-white text-primary-600 shadow-sm"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
+                className={`rounded-lg p-1.5 transition ${viewMode === "kanban" ? "bg-orange text-white shadow-sm" : "text-muted hover:text-ink"}`}
                 title="Kanban Board View"
               >
                 <Kanban className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setViewMode("list")}
-                className={`rounded p-1.5 transition ${
-                  viewMode === "list"
-                    ? "bg-white text-primary-600 shadow-sm"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
+                className={`rounded-lg p-1.5 transition ${viewMode === "list" ? "bg-orange text-white shadow-sm" : "text-muted hover:text-ink"}`}
                 title="List Ledger View"
               >
                 <List className="h-4 w-4" />
@@ -230,7 +190,7 @@ export default function Interventions() {
 
             <button
               onClick={() => setShowForm(!showForm)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-primary-700 transition shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-orange px-3.5 py-2 text-[12px] font-semibold text-white shadow-submit hover:bg-orange-light transition"
             >
               <Plus className="h-4 w-4" />
               New Intervention
@@ -239,8 +199,8 @@ export default function Interventions() {
         </div>
 
         {/* Bottleneck Category Filter Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-100">
-          <span className="text-[11px] font-medium text-slate-400 mr-1 flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-white/[0.06]">
+          <span className="text-[10.5px] font-bold uppercase tracking-widest text-muted mr-1 flex items-center gap-1">
             <Filter className="h-3 w-3" /> Bottleneck:
           </span>
           {[
@@ -254,10 +214,10 @@ export default function Interventions() {
             <button
               key={tab.key}
               onClick={() => setCategoryFilter(tab.key)}
-              className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
+              className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
                 categoryFilter === tab.key
-                  ? "bg-primary-600 text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-orange text-white"
+                  : "bg-white/[0.06] text-muted hover:bg-white/[0.10] hover:text-ink"
               }`}
             >
               {tab.label}
@@ -268,16 +228,13 @@ export default function Interventions() {
 
       {/* CREATE FORM DRAWER */}
       {showForm && (
-        <Card className="p-5 border-2 border-primary-500 bg-primary-50/20 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <Sparkles className="h-4 w-4 text-primary-600" />
+        <Card className="p-5 border-2 border-orange/40 bg-orange/[0.04] space-y-4">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+            <h3 className="text-[13.5px] font-bold text-ink flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-orange" />
               Draft PM GatiShakti Prescriptive Directive
             </h3>
-            <button
-              onClick={() => setShowForm(false)}
-              className="text-xs text-slate-400 hover:text-slate-600"
-            >
+            <button onClick={() => setShowForm(false)} className="text-[12px] text-muted hover:text-ink">
               Cancel
             </button>
           </div>
@@ -285,222 +242,263 @@ export default function Interventions() {
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-3">
               <div>
-                <label className="block text-[11px] font-medium text-slate-700 mb-1">Target Project</label>
+                <label className="block text-[10.5px] font-bold uppercase tracking-widest text-muted mb-1">Target Project</label>
                 <input
                   required
                   value={formData.project_name}
                   onChange={(e) => setFormData({ ...formData, project_name: e.target.value })}
                   placeholder="e.g. Vadodara-Mumbai Expressway"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-primary-500 outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.05] px-3 py-2 text-[12.5px] text-ink outline-none focus:border-orange/50"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-slate-700 mb-1">Bottleneck Classification</label>
+                <label className="block text-[10.5px] font-bold uppercase tracking-widest text-muted mb-1">Bottleneck Classification</label>
                 <select
                   value={formData.bottleneck_category}
                   onChange={(e) => setFormData({ ...formData, bottleneck_category: e.target.value })}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-primary-500 outline-none"
+                  className="w-full rounded-xl border border-white/[0.08] bg-surface-card px-3 py-2 text-[12.5px] text-ink outline-none focus:border-orange/50"
+                  style={{ backgroundColor: "#1A1B25", color: "#F0F2F8" }}
                 >
-                  <option value="Land Acquisition">Land Acquisition (RFCTLARR RoW)</option>
+                  <option value="Land Acquisition">Land Acquisition (RoW)</option>
                   <option value="Environmental Clearance">MoEFCC Forest Clearance</option>
-                  <option value="Utility Shifting">Utility Shifting (Power / Pipelines)</option>
-                  <option value="Inter-Agency Coordination">Inter-Agency / NPG Escalation</option>
-                  <option value="Contractor Liquidity">Contractor Cashflow & Claims</option>
+                  <option value="Utility Shifting">Utility Shifting (Power/Water)</option>
+                  <option value="Inter-Agency Coordination">Inter-Agency Coordination</option>
+                  <option value="Contractor Liquidity">Contractor Liquidity / Funding</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-slate-700 mb-1">Designated Nodal Officer</label>
+                <label className="block text-[10.5px] font-bold uppercase tracking-widest text-muted mb-1">Assigned Nodal Body / Owner</label>
                 <input
                   value={formData.owner}
                   onChange={(e) => setFormData({ ...formData, owner: e.target.value })}
-                  placeholder="e.g. Joint Secretary (Infrastructure)"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-primary-500 outline-none"
+                  placeholder="e.g. Ministry of Road Transport & Highways"
+                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.05] px-3 py-2 text-[12.5px] text-ink outline-none focus:border-orange/50"
                 />
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="block text-[11px] font-medium text-slate-700 mb-1">Specific Regulatory Bottleneck</label>
-                <input
-                  required
-                  value={formData.issue}
-                  onChange={(e) => setFormData({ ...formData, issue: e.target.value })}
-                  placeholder="e.g. Section 19 notification pending across 12.4 km stretch"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-primary-500 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-slate-700 mb-1">Mandated Action Directive</label>
-                <input
-                  required
-                  value={formData.action}
-                  onChange={(e) => setFormData({ ...formData, action: e.target.value })}
-                  placeholder="e.g. Convene joint review with State Chief Secretary within 10 days"
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-primary-500 outline-none"
-                />
-              </div>
+            <div>
+              <label className="block text-[10.5px] font-bold uppercase tracking-widest text-muted mb-1">Root Cause / Identified Impediment</label>
+              <input
+                value={formData.issue}
+                onChange={(e) => setFormData({ ...formData, issue: e.target.value })}
+                placeholder="Briefly describe the obstacle delaying physical execution..."
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.05] px-3 py-2 text-[12.5px] text-ink outline-none focus:border-orange/50"
+              />
             </div>
 
-            <div className="flex justify-end gap-2 pt-1">
+            <div>
+              <label className="block text-[10.5px] font-bold uppercase tracking-widest text-muted mb-1">Recommended Prescriptive Action</label>
+              <textarea
+                required
+                rows={2}
+                value={formData.action}
+                onChange={(e) => setFormData({ ...formData, action: e.target.value })}
+                placeholder="State specific directive, expedited clearance pathway, or financial release requirement..."
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.05] px-3 py-2 text-[12.5px] text-ink outline-none focus:border-orange/50"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-[12px] font-semibold text-ink hover:bg-white/[0.08]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="rounded-lg bg-primary-600 px-4 py-2 text-xs font-semibold text-white hover:bg-primary-700"
+                className="rounded-xl bg-orange px-5 py-2 text-[12px] font-semibold text-white shadow-submit hover:bg-orange-light"
               >
-                Issue Directive
+                Issue PM GatiShakti Directive
               </button>
             </div>
           </form>
         </Card>
       )}
 
-      {/* MAIN VIEW: KANBAN BOARD OR LIST */}
+      {/* KANBAN BOARD OR LIST VIEW */}
       {loading ? (
-        <Card className="p-12 text-center text-xs text-slate-500">
-          Loading active PM GatiShakti mitigation board...
-        </Card>
+        <Card className="p-12 text-center text-sm text-muted">Loading active directives…</Card>
       ) : viewMode === "kanban" ? (
-        /* KANBAN BOARD VIEW */
+        /* KANBAN VIEW */
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          {kanbanColumns.map((col) => {
-            const colItems = filteredItems.filter(col.filterFn);
+          {/* OPEN COLUMN */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-xl bg-amber-500/10 border border-amber-500/20 px-4 py-2.5">
+              <span className="text-[12px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5 text-amber-400" />
+                Pending Review ({kanbanColumns.open.length})
+              </span>
+            </div>
 
-            return (
-              <div key={col.key} className="flex flex-col space-y-3">
-                {/* Column Header */}
-                <div className={`rounded-xl border border-slate-200 bg-white p-3.5 border-t-4 ${col.accent} shadow-sm flex items-center justify-between`}>
-                  <h4 className="text-xs font-bold text-slate-900">{col.title}</h4>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${col.badgeColor}`}>
-                    {colItems.length}
-                  </span>
+            <div className="space-y-3">
+              {kanbanColumns.open.map((item) => (
+                <Card key={item.id} className="p-4 space-y-3 border-l-4 border-l-amber-500 hover:border-amber-500/40">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="rounded-full bg-white/[0.06] border border-white/[0.06] px-2 py-0.5 text-[10px] font-medium text-muted">
+                      {item.bottleneck_category || "Clearance"}
+                    </span>
+                    <span className="text-[10.5px] font-bold text-amber-400 uppercase font-mono">
+                      {item.priority || "High"}
+                    </span>
+                  </div>
+
+                  <p className="text-[13px] font-bold text-ink leading-snug">{item.project_name}</p>
+                  <p className="text-[12px] text-muted line-clamp-2">{item.action || item.issue}</p>
+
+                  <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px]">
+                    <span className="text-muted font-mono">{item.owner || "NPG Cell"}</span>
+                    <button
+                      onClick={() => updateStatus(item.id, "In Progress")}
+                      className="font-semibold text-orange hover:text-orange-light transition-colors"
+                    >
+                      Start Review →
+                    </button>
+                  </div>
+                </Card>
+              ))}
+              {kanbanColumns.open.length === 0 && (
+                <div className="rounded-xl border border-dashed border-white/[0.08] p-6 text-center text-[12px] text-muted">
+                  No pending directives
                 </div>
+              )}
+            </div>
+          </div>
 
-                {/* Column Cards */}
-                <div className="space-y-3 flex-1 min-h-[350px]">
-                  {colItems.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-[11px] text-slate-400">
-                      No actions in this stage.
-                    </div>
-                  ) : (
-                    colItems.map((item) => (
-                      <Card
-                        key={item.id}
-                        className="p-4 space-y-3 hover:shadow-md transition border-slate-200"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
-                            {item.bottleneck_category || "General Clearance"}
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-medium">
-                            {item.deadline || "Due: 15 Oct"}
-                          </span>
-                        </div>
+          {/* IN PROGRESS COLUMN */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-xl bg-blue-500/10 border border-blue-500/20 px-4 py-2.5">
+              <span className="text-[12px] font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-blue-400" />
+                Under NPG Scrutiny ({kanbanColumns.inProgress.length})
+              </span>
+            </div>
 
-                        <div>
-                          <h5 className="text-xs font-bold text-slate-900">
-                            {item.project_name}
-                          </h5>
-                          <p className="mt-1 text-[11px] text-slate-500 font-medium">
-                            {item.issue}
-                          </p>
-                        </div>
+            <div className="space-y-3">
+              {kanbanColumns.inProgress.map((item) => (
+                <Card key={item.id} className="p-4 space-y-3 border-l-4 border-l-blue-500 hover:border-blue-500/40">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="rounded-full bg-white/[0.06] border border-white/[0.06] px-2 py-0.5 text-[10px] font-medium text-muted">
+                      {item.bottleneck_category || "Clearance"}
+                    </span>
+                    <span className="text-[10.5px] font-bold text-blue-400 uppercase font-mono">
+                      {item.priority || "High"}
+                    </span>
+                  </div>
 
-                        {/* Prescribed Action Box */}
-                        <div className="rounded-lg bg-primary-50/70 border border-primary-100 p-2.5 text-[11px] text-primary-900 leading-normal">
-                          <strong>Directive:</strong> {item.action}
-                        </div>
+                  <p className="text-[13px] font-bold text-ink leading-snug">{item.project_name}</p>
+                  <p className="text-[12px] text-muted line-clamp-2">{item.action || item.issue}</p>
 
-                        <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
-                          <span className="text-slate-500">
-                            Owner: <strong className="text-slate-700">{item.owner || "NPG Lead"}</strong>
-                          </span>
-
-                          {/* Quick Workflow Action Button */}
-                          {col.key === "Open" && (
-                            <button
-                              onClick={() => updateStatus(item.id, "In Progress")}
-                              className="font-bold text-primary-600 hover:text-primary-800"
-                            >
-                              Assign to NPG →
-                            </button>
-                          )}
-                          {col.key === "In Progress" && (
-                            <button
-                              onClick={() => updateStatus(item.id, "Completed")}
-                              className="font-bold text-emerald-600 hover:text-emerald-800"
-                            >
-                              Mark Cleared ✓
-                            </button>
-                          )}
-                          {col.key === "Completed" && (
-                            <span className="font-bold text-emerald-700 flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" /> Resolved
-                            </span>
-                          )}
-                        </div>
-                      </Card>
-                    ))
-                  )}
+                  <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px]">
+                    <span className="text-muted font-mono">{item.owner || "NPG Cell"}</span>
+                    <button
+                      onClick={() => updateStatus(item.id, "Completed")}
+                      className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
+                    >
+                      Mark Resolved ✓
+                    </button>
+                  </div>
+                </Card>
+              ))}
+              {kanbanColumns.inProgress.length === 0 && (
+                <div className="rounded-xl border border-dashed border-white/[0.08] p-6 text-center text-[12px] text-muted">
+                  No active reviews
                 </div>
-              </div>
-            );
-          })}
+              )}
+            </div>
+          </div>
+
+          {/* RESOLVED COLUMN */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4 py-2.5">
+              <span className="text-[12px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                Resolved & Cleared ({kanbanColumns.resolved.length})
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {kanbanColumns.resolved.map((item) => (
+                <Card key={item.id} className="p-4 space-y-3 border-l-4 border-l-emerald-500 opacity-80">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                      RESOLVED
+                    </span>
+                    <span className="text-[10.5px] font-bold text-muted font-mono">
+                      {item.deadline || "Completed"}
+                    </span>
+                  </div>
+
+                  <p className="text-[13px] font-bold text-ink leading-snug">{item.project_name}</p>
+                  <p className="text-[12px] text-muted line-clamp-2">{item.action || item.issue}</p>
+
+                  <div className="pt-2 border-t border-white/[0.06] text-[11px] text-emerald-400 font-medium">
+                    ✓ Directive fully executed by NPG Nodal Officer
+                  </div>
+                </Card>
+              ))}
+              {kanbanColumns.resolved.length === 0 && (
+                <div className="rounded-xl border border-dashed border-white/[0.08] p-6 text-center text-[12px] text-muted">
+                  No resolved items yet
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       ) : (
-        /* LIST TABLE VIEW */
+        /* LIST LEDGER VIEW */
         <Card className="overflow-hidden">
+          <div className="border-b border-white/[0.06] bg-white/[0.02] px-5 py-3.5 flex items-center justify-between">
+            <h3 className="text-[12px] font-bold uppercase tracking-wider text-ink">
+              Inter-Agency Prescriptive Directive Ledger ({filteredItems.length} Actions)
+            </h3>
+            <span className="text-[11px] text-muted font-medium">Official NPG Audit Feed</span>
+          </div>
+
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="border-b border-slate-200 bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+            <table className="w-full text-left">
+              <thead className="border-b border-white/[0.06] bg-white/[0.02] text-[10.5px] uppercase tracking-widest text-muted">
                 <tr>
-                  <th className="px-5 py-3 font-semibold">Project Title</th>
-                  <th className="px-5 py-3 font-semibold">Bottleneck Type</th>
-                  <th className="px-5 py-3 font-semibold">Identified Constraint</th>
-                  <th className="px-5 py-3 font-semibold">Mandated Directive</th>
-                  <th className="px-5 py-3 font-semibold">Assigned Owner</th>
-                  <th className="px-5 py-3 font-semibold">Status</th>
-                  <th className="px-5 py-3 font-semibold text-right">Update</th>
+                  <th className="px-5 py-3 font-bold">Target Project</th>
+                  <th className="px-5 py-3 font-bold">Bottleneck Classification</th>
+                  <th className="px-5 py-3 font-bold">Prescriptive Directive Action</th>
+                  <th className="px-5 py-3 font-bold">Assigned Owner</th>
+                  <th className="px-5 py-3 font-bold">Status</th>
+                  <th className="px-5 py-3 text-right font-bold">Update</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-white/[0.04]">
                 {filteredItems.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/60 transition">
-                    <td className="px-5 py-3.5 font-bold text-slate-900">{item.project_name}</td>
-                    <td className="px-5 py-3 text-slate-600">{item.bottleneck_category}</td>
-                    <td className="px-5 py-3 text-slate-600 max-w-[200px] truncate">{item.issue}</td>
-                    <td className="px-5 py-3 font-medium text-primary-900 max-w-[260px] truncate">{item.action}</td>
-                    <td className="px-5 py-3 text-slate-600">{item.owner}</td>
+                  <tr key={item.id} className="hover:bg-white/[0.03] transition-colors">
+                    <td className="px-5 py-3.5 font-bold text-ink text-[13px]">{item.project_name}</td>
+                    <td className="px-5 py-3 text-muted text-[12px]">{item.bottleneck_category || "Clearance"}</td>
+                    <td className="px-5 py-3 text-slate-200 text-[12.5px] max-w-[320px] leading-snug">{item.action || item.issue}</td>
+                    <td className="px-5 py-3 text-muted text-[12px] font-mono">{item.owner || "NPG Cell"}</td>
                     <td className="px-5 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                        item.status === "Completed"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : item.status === "In Progress"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-amber-100 text-amber-800"
+                      <span className={`rounded-full px-2.5 py-0.5 text-[10.5px] font-bold ${
+                        item.status === "Completed" || item.status === "Resolved"
+                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          : item.status === "In Progress" || item.status === "Assigned"
+                          ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                          : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                       }`}>
                         {item.status || "Open"}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">
-                      {item.status !== "Completed" ? (
+                      {item.status !== "Completed" && item.status !== "Resolved" ? (
                         <button
-                          onClick={() => updateStatus(item.id, "Completed")}
-                          className="text-[11px] font-semibold text-primary-600 hover:underline"
+                          onClick={() => updateStatus(item.id, item.status === "In Progress" ? "Completed" : "In Progress")}
+                          className="text-[12px] font-semibold text-orange hover:text-orange-light transition-colors"
                         >
-                          Resolve
+                          Advance Status →
                         </button>
                       ) : (
-                        <span className="text-[11px] text-emerald-600 font-semibold">Cleared</span>
+                        <span className="text-[11px] text-emerald-400 font-semibold">✓ Cleared</span>
                       )}
                     </td>
                   </tr>

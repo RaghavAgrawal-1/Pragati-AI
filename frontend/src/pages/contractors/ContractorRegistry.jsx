@@ -1,21 +1,8 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Award,
-  Building2,
-  CheckCircle2,
-  Clock,
-  Filter,
-  Plus,
-  RefreshCw,
-  Search,
-  ShieldCheck,
-  Star,
-  ThumbsUp,
-  TrendingUp,
-  AlertCircle,
-  Briefcase,
-  MapPin,
-  FileCheck,
+  Award, Building2, CheckCircle2, Clock, Filter, Plus, RefreshCw,
+  Search, ShieldCheck, Star, ThumbsUp, TrendingUp, AlertCircle,
+  Briefcase, MapPin, FileCheck,
 } from "lucide-react";
 import Card from "../../components/common/Card";
 import Button from "../../components/common/Button";
@@ -25,15 +12,7 @@ import { contractorService } from "../../services/contractorService";
 import ContractorOnboardingModal from "./ContractorOnboardingModal";
 import ContractorWorkUpdateModal from "./ContractorWorkUpdateModal";
 
-const SECTORS = [
-  "ALL",
-  "Highways",
-  "Rail",
-  "Bridges",
-  "Renewable",
-  "Urban",
-];
-
+const SECTORS = ["ALL", "Highways", "Rail", "Bridges", "Renewable", "Urban"];
 const GRADES = ["ALL", "A+", "A", "B+", "B"];
 
 function getBadgeStyle(badge) {
@@ -41,25 +20,25 @@ function getBadgeStyle(badge) {
     case "TIER_1_PREFERRED":
       return {
         label: "Tier-1 Preferred Partner",
-        bg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        bg: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
         icon: ShieldCheck,
       };
     case "ON_TIME_EXCELLENCE":
       return {
         label: "On-Time Excellence",
-        bg: "bg-sky-50 text-sky-700 border-sky-200",
+        bg: "bg-sky-500/10 text-sky-400 border border-sky-500/20",
         icon: Award,
       };
     case "UNDER_MONITORING":
       return {
         label: "Under Performance Review",
-        bg: "bg-amber-50 text-amber-700 border-amber-200",
+        bg: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
         icon: Clock,
       };
     default:
       return {
         label: "Verified Partner",
-        bg: "bg-indigo-50 text-indigo-700 border-indigo-200",
+        bg: "bg-orange/10 text-orange border border-orange/20",
         icon: CheckCircle2,
       };
   }
@@ -68,13 +47,13 @@ function getBadgeStyle(badge) {
 function getGradeBadgeColor(grade) {
   switch (grade) {
     case "A+":
-      return "bg-emerald-600 text-white";
+      return "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
     case "A":
-      return "bg-navy text-white";
+      return "bg-orange/20 text-orange border border-orange/30";
     case "B+":
-      return "bg-sky-600 text-white";
+      return "bg-sky-500/20 text-sky-400 border border-sky-500/30";
     default:
-      return "bg-slate-600 text-white";
+      return "bg-white/[0.06] text-muted border border-white/[0.06]";
   }
 }
 
@@ -82,135 +61,126 @@ export default function ContractorRegistry() {
   const [contractors, setContractors] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Filters state
   const [search, setSearch] = useState("");
   const [selectedSector, setSelectedSector] = useState("ALL");
   const [selectedGrade, setSelectedGrade] = useState("ALL");
   const [sortBy, setSortBy] = useState("trust_score");
 
-  // Modals
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
-  const [selectedContractor, setSelectedContractor] = useState(null);
+  // Modal controls
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [selectedContractorForUpdate, setSelectedContractorForUpdate] = useState(null);
 
-  const fetchData = async () => {
+  const fetchContractors = async () => {
     setLoading(true);
     try {
-      const [listData, summaryData] = await Promise.all([
-        contractorService.list({
-          search: search || undefined,
-          sector: selectedSector !== "ALL" ? selectedSector : undefined,
-          grade: selectedGrade !== "ALL" ? selectedGrade : undefined,
-          sort_by: sortBy,
-        }),
-        contractorService.summary(),
-      ]);
-      setContractors(Array.isArray(listData) ? listData : []);
-      setSummary(summaryData);
+      const params = {
+        sort_by: sortBy,
+      };
+      if (search.trim()) params.query = search.trim();
+      if (selectedSector !== "ALL") params.sector = selectedSector;
+      if (selectedGrade !== "ALL") params.grade = selectedGrade;
+
+      const res = await contractorService.list(params);
+      setContractors(res.items ?? []);
+
+      const sumRes = await contractorService.getSummary();
+      setSummary(sumRes);
     } catch (err) {
-      console.error("Error fetching contractor data", err);
+      console.error("Failed to load contractors:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    fetchContractors();
   }, [selectedSector, selectedGrade, sortBy]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    fetchData();
+    fetchContractors();
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Page Header */}
+    <div className="space-y-6 animate-slideUp">
       <PageHeader
-        title="Contractor & Builder Trust Registry"
-        subtitle="National performance ratings, on-time delivery credentials, and vendor onboarding under PM GatiShakti & MoSPI"
+        title="National EPC Contractor Trust & Capability Registry"
+        subtitle="Verifiable performance ledger, AI trust scoring, and historical delivery track-record of infrastructure contractors."
         actions={
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={fetchData}
-              disabled={loading}
-            >
-              <RefreshCw size={14} className="mr-1.5" />
-              Refresh
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setOnboardingOpen(true)}
-            >
-              <Plus size={15} className="mr-1.5" />
-              Register as New Contractor
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            icon={Plus}
+            onClick={() => setShowOnboarding(true)}
+            className="shadow-submit"
+          >
+            Onboard New Contractor
+          </Button>
         }
       />
 
       {/* Top Macro Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="p-4 border-l-4 border-l-navy">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-muted">
+        <div className="rounded-2xl border-l-4 border-l-orange border border-white/[0.06] bg-surface-card p-4">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10.5px] font-bold uppercase tracking-widest text-orange">
               Enlisted EPC Contractors
             </p>
-            <Building2 size={18} className="text-navy" />
+            <Building2 size={16} className="text-orange" />
           </div>
-          <p className="mt-2 text-2xl font-bold text-ink">
+          <p className="text-[26px] font-extrabold tabular-nums text-ink">
             {summary?.total_contractors ?? contractors.length}
           </p>
-          <p className="mt-0.5 text-[11px] text-muted">
+          <p className="mt-1 text-[11px] text-muted">
             Monitored across {summary?.total_projects_monitored ?? 120}+ work packages
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-emerald-600">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-muted">
+        <div className="rounded-2xl border-l-4 border-l-emerald-500 border border-white/[0.06] bg-surface-card p-4">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10.5px] font-bold uppercase tracking-widest text-emerald-400">
               National On-Time Delivery Rate
             </p>
-            <Clock size={18} className="text-emerald-600" />
+            <Clock size={16} className="text-emerald-400" />
           </div>
-          <p className="mt-2 text-2xl font-bold text-emerald-700">
+          <p className="text-[26px] font-extrabold tabular-nums text-emerald-400">
             {summary?.overall_on_time_delivery_rate ?? 86.4}%
           </p>
-          <p className="mt-0.5 text-[11px] text-muted">
+          <p className="mt-1 text-[11px] text-muted">
             Milestones delivered within statutory schedule
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-sky-600">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-muted">
+        <div className="rounded-2xl border-l-4 border-l-sky-500 border border-white/[0.06] bg-surface-card p-4">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10.5px] font-bold uppercase tracking-widest text-sky-400">
               Tier-1 Preferred Partners
             </p>
-            <ShieldCheck size={18} className="text-sky-600" />
+            <ShieldCheck size={16} className="text-sky-400" />
           </div>
-          <p className="mt-2 text-2xl font-bold text-ink">
+          <p className="text-[26px] font-extrabold tabular-nums text-sky-400">
             {summary?.tier1_preferred_count ?? 3} Firms
           </p>
-          <p className="mt-0.5 text-[11px] text-muted">
+          <p className="mt-1 text-[11px] text-muted">
             Grade A+ with &gt;90% on-time record
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-4 border-l-4 border-l-amber-500">
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-muted">
+        <div className="rounded-2xl border-l-4 border-l-amber-500 border border-white/[0.06] bg-surface-card p-4">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10.5px] font-bold uppercase tracking-widest text-amber-400">
               Average Trust Index
             </p>
-            <Star size={18} className="text-amber-500" />
+            <Star size={16} className="text-amber-400" />
           </div>
-          <p className="mt-2 text-2xl font-bold text-ink">
-            {summary?.average_trust_score ?? 84.5} <span className="text-[13px] font-normal text-muted">/ 100</span>
+          <p className="text-[26px] font-extrabold tabular-nums text-amber-400">
+            {summary?.average_trust_score ?? 84.5} <span className="text-[12px] font-normal text-muted">/ 100</span>
           </p>
-          <p className="mt-0.5 text-[11px] text-muted">
+          <p className="mt-1 text-[11px] text-muted">
             Weighted on-time, safety & quality metrics
           </p>
-        </Card>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
@@ -224,7 +194,7 @@ export default function ContractorRegistry() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search contractor name, GSTIN, or city..."
-              className="w-full rounded-lg border border-slate-200 bg-slate-50/50 pl-9 pr-3 py-2 text-[12.5px] text-ink focus:border-navy focus:bg-white focus:outline-none focus:ring-1 focus:ring-navy"
+              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.05] pl-9 pr-3 py-2 text-[12.5px] text-ink placeholder:text-muted focus:border-orange/50 focus:outline-none transition-all"
             />
           </form>
 
@@ -232,15 +202,15 @@ export default function ContractorRegistry() {
           <div className="flex flex-wrap items-center gap-3 text-[12px]">
             {/* Sector filter */}
             <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-              <span className="text-muted font-medium mr-1">Sector:</span>
+              <span className="text-muted font-bold uppercase text-[10.5px] tracking-widest mr-1">Sector:</span>
               {SECTORS.map((sec) => (
                 <button
                   key={sec}
                   onClick={() => setSelectedSector(sec)}
                   className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition ${
                     selectedSector === sec
-                      ? "bg-navy text-white"
-                      : "bg-slate-100 text-muted hover:bg-slate-200 hover:text-ink"
+                      ? "bg-orange text-white"
+                      : "bg-white/[0.06] text-muted hover:bg-white/[0.10] hover:text-ink"
                   }`}
                 >
                   {sec}
@@ -250,15 +220,15 @@ export default function ContractorRegistry() {
 
             {/* Grade filter */}
             <div className="flex items-center gap-1.5">
-              <span className="text-muted font-medium mr-1">Grade:</span>
+              <span className="text-muted font-bold uppercase text-[10.5px] tracking-widest mr-1">Grade:</span>
               {GRADES.map((g) => (
                 <button
                   key={g}
                   onClick={() => setSelectedGrade(g)}
-                  className={`rounded-md px-2 py-0.5 text-[11px] font-semibold transition ${
+                  className={`rounded-lg px-2 py-0.5 text-[11px] font-semibold transition ${
                     selectedGrade === g
-                      ? "bg-slate-900 text-white"
-                      : "bg-slate-100 text-muted hover:bg-slate-200"
+                      ? "bg-orange text-white"
+                      : "bg-white/[0.06] text-muted hover:bg-white/[0.10]"
                   }`}
                 >
                   {g}
@@ -268,15 +238,16 @@ export default function ContractorRegistry() {
 
             {/* Sort */}
             <div className="flex items-center gap-1.5 ml-auto">
-              <span className="text-muted font-medium">Sort:</span>
+              <span className="text-muted font-bold uppercase text-[10.5px] tracking-widest">Sort:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11.5px] text-ink focus:border-navy focus:outline-none"
+                className="rounded-xl border border-white/[0.08] bg-surface-card px-2.5 py-1.5 text-[11.5px] text-ink focus:border-orange/50 focus:outline-none"
+                style={{ backgroundColor: "#1A1B25", color: "#F0F2F8" }}
               >
-                <option value="trust_score">Highest Trust Score</option>
-                <option value="on_time">Highest On-Time Rate</option>
-                <option value="name">Company Name (A-Z)</option>
+                <option value="trust_score" style={{ backgroundColor: "#1A1B25", color: "#F0F2F8" }}>Highest Trust Score</option>
+                <option value="on_time" style={{ backgroundColor: "#1A1B25", color: "#F0F2F8" }}>Highest On-Time Rate</option>
+                <option value="name" style={{ backgroundColor: "#1A1B25", color: "#F0F2F8" }}>Company Name (A-Z)</option>
               </select>
             </div>
           </div>
@@ -299,140 +270,103 @@ export default function ContractorRegistry() {
             variant="primary"
             size="sm"
             className="mt-4"
-            onClick={() => setOnboardingOpen(true)}
+            onClick={() => setShowOnboarding(true)}
           >
-            Register New Contractor
+            Register Contractor
           </Button>
         </Card>
       ) : (
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {contractors.map((contractor) => {
-            const badgeMeta = getBadgeStyle(contractor.badge);
-            const BadgeIcon = badgeMeta.icon;
-            const onTimePct = Math.round(
-              (contractor.on_time_projects / Math.max(contractor.total_projects, 1)) * 100
-            );
+            const badgeStyle = getBadgeStyle(contractor.badge);
+            const BadgeIcon = badgeStyle.icon;
+            const gradeColor = getGradeBadgeColor(contractor.rating_grade);
 
             return (
               <Card
                 key={contractor.id}
-                className="p-5 flex flex-col justify-between hover:shadow-md transition border border-slate-200/80"
+                className="flex flex-col justify-between p-5 hover:border-orange/20 transition-all"
               >
                 <div>
-                  {/* Top Row: Company & Badge */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-[14.5px] font-bold text-ink hover:text-navy transition">
-                          {contractor.company_name}
-                        </h3>
-                        <span
-                          className={`rounded px-1.5 py-0.5 text-[10px] font-black tracking-wide ${getGradeBadgeColor(
-                            contractor.rating_grade
-                          )}`}
-                        >
-                          {contractor.rating_grade}
-                        </span>
-                      </div>
-
-                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
-                        <span className="flex items-center gap-1">
-                          <MapPin size={11} />
-                          {contractor.headquarters}
-                        </span>
-                        <span>•</span>
-                        <span>{contractor.registration_no}</span>
-                      </div>
-                    </div>
-
-                    {/* Trust Score circular block */}
-                    <div className="text-right shrink-0">
-                      <div className="text-xl font-black text-navy">
-                        {contractor.trust_score}
-                      </div>
-                      <p className="text-[9.5px] uppercase font-semibold tracking-wider text-muted">
-                        Trust Score
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Verification Badge */}
-                  <div className="mt-3 flex items-center justify-between">
-                    <div
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10.5px] font-medium ${badgeMeta.bg}`}
+                  {/* Top Bar: Grade & Status Badge */}
+                  <div className="flex items-start justify-between gap-2">
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10.5px] font-bold ${badgeStyle.bg}`}
                     >
                       <BadgeIcon size={12} />
-                      <span>{badgeMeta.label}</span>
-                    </div>
+                      {badgeStyle.label}
+                    </span>
 
-                    <span className="text-[11px] text-slate-500 font-medium">
-                      {contractor.contractor_class}
+                    <span
+                      className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${gradeColor}`}
+                    >
+                      Grade {contractor.rating_grade}
                     </span>
                   </div>
 
-                  {/* On-Time Delivery Progress Metric */}
-                  <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/70 p-3">
-                    <div className="flex items-center justify-between text-[11.5px]">
-                      <span className="font-semibold text-ink flex items-center gap-1.5">
-                        <Clock size={13} className="text-emerald-600" />
-                        On-Time Completion Rate
-                      </span>
-                      <span className="font-bold text-emerald-700">{onTimePct}%</span>
+                  {/* Company Name */}
+                  <h3 className="mt-3 text-[15px] font-extrabold text-ink line-clamp-1">
+                    {contractor.name}
+                  </h3>
+                  <p className="text-[11.5px] text-muted font-mono flex items-center gap-1.5 mt-0.5">
+                    <MapPin size={12} className="text-orange" />
+                    {contractor.city || "Pan-India"}, {contractor.state || "HQ"}
+                  </p>
+
+                  {/* Key Performance Indicators */}
+                  <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-[12px]">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold tracking-widest text-muted">
+                        Trust Score
+                      </p>
+                      <p className="mt-0.5 text-[16px] font-extrabold text-orange tabular-nums">
+                        {contractor.trust_score} <span className="text-[10px] text-muted font-normal">/100</span>
+                      </p>
                     </div>
 
-                    <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">
-                      <div
-                        className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                        style={{ width: `${Math.min(100, onTimePct)}%` }}
-                      />
-                    </div>
-
-                    <div className="mt-2 flex items-center justify-between text-[11px] text-muted">
-                      <span>
-                        <strong className="text-ink font-medium">{contractor.on_time_projects}</strong> On-Time Delivered
-                      </span>
-                      <span>
-                        <strong className="text-amber-600 font-medium">{contractor.delayed_projects}</strong> Delayed
-                      </span>
-                      <span>
-                        <strong className="text-ink font-medium">{contractor.total_projects}</strong> Total Works
-                      </span>
+                    <div>
+                      <p className="text-[10px] uppercase font-bold tracking-widest text-muted">
+                        On-Time Rate
+                      </p>
+                      <p className="mt-0.5 text-[16px] font-extrabold text-emerald-400 tabular-nums">
+                        {contractor.on_time_delivery_rate}%
+                      </p>
                     </div>
                   </div>
 
-                  {/* Key Achievements or Works */}
-                  {contractor.key_achievements && (
-                    <div className="mt-3 rounded-lg border border-slate-100 bg-white p-2.5">
-                      <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
-                        Track Record & Achievements
-                      </p>
-                      <p className="mt-1 text-[11.5px] text-ink leading-relaxed line-clamp-2">
-                        {contractor.key_achievements}
-                      </p>
+                  {/* Operational Capabilities */}
+                  <div className="mt-3.5 space-y-1.5 text-[11.5px] text-muted">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <Briefcase size={13} className="text-muted" /> Active Packages:
+                      </span>
+                      <span className="font-semibold text-ink tabular-nums">
+                        {contractor.active_projects_count} ({contractor.completed_projects_count} Completed)
+                      </span>
                     </div>
-                  )}
+
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1">
+                        <FileCheck size={13} className="text-muted" /> Primary Sector:
+                      </span>
+                      <span className="font-semibold text-ink">
+                        {contractor.primary_sector || "Civil Engineering"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Card Footer: Rating + Actions */}
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[11.5px]">
-                    <div className="flex items-center text-amber-400">
-                      <Star size={13} fill="currentColor" />
-                    </div>
-                    <span className="font-semibold text-ink">
-                      {contractor.market_rating_avg?.toFixed(1) ?? "4.5"}
-                    </span>
-                    <span className="text-muted text-[11px]">
-                      ({contractor.market_reviews_count} reviews)
-                    </span>
-                  </div>
+                {/* Card Action Footer */}
+                <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between">
+                  <span className="text-[10.5px] font-mono text-muted">
+                    GSTIN: {contractor.gstin ? `${contractor.gstin.slice(0, 7)}...` : "VERIFIED"}
+                  </span>
 
                   <button
-                    onClick={() => setSelectedContractor(contractor)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11.5px] font-medium text-navy hover:bg-slate-50 hover:border-slate-300 shadow-sm transition"
+                    onClick={() => setSelectedContractorForUpdate(contractor)}
+                    className="inline-flex items-center gap-1 text-[12px] font-semibold text-orange hover:text-orange-light transition-colors"
                   >
-                    <ThumbsUp size={12} />
-                    <span>Update / Give Feedback</span>
+                    Update Metrics →
                   </button>
                 </div>
               </Card>
@@ -442,23 +376,27 @@ export default function ContractorRegistry() {
       )}
 
       {/* Onboarding Modal */}
-      <ContractorOnboardingModal
-        isOpen={onboardingOpen}
-        onClose={() => setOnboardingOpen(false)}
-        onRegistered={(newContractor) => {
-          fetchData();
-        }}
-      />
+      {showOnboarding && (
+        <ContractorOnboardingModal
+          onClose={() => setShowOnboarding(false)}
+          onSuccess={() => {
+            setShowOnboarding(false);
+            fetchContractors();
+          }}
+        />
+      )}
 
-      {/* Update Work / Give Feedback Modal */}
-      <ContractorWorkUpdateModal
-        isOpen={!!selectedContractor}
-        contractor={selectedContractor}
-        onClose={() => setSelectedContractor(null)}
-        onUpdated={(updated) => {
-          fetchData();
-        }}
-      />
+      {/* Work Update Modal */}
+      {selectedContractorForUpdate && (
+        <ContractorWorkUpdateModal
+          contractor={selectedContractorForUpdate}
+          onClose={() => setSelectedContractorForUpdate(null)}
+          onSuccess={() => {
+            setSelectedContractorForUpdate(null);
+            fetchContractors();
+          }}
+        />
+      )}
     </div>
   );
 }
