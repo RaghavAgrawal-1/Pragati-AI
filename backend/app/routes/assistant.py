@@ -20,14 +20,31 @@ router = APIRouter(prefix="/api/assistant", tags=["Assistant"])
 
 
 class AssistantRequest(BaseModel):
-    message: str
+    message: str | None = None
+    prompt: str | None = None
     project_id: int | None = None
+
+    @property
+    def query_text(self) -> str:
+        return self.message or self.prompt or "hello"
 
 
 def get_portfolio_context(projects: list[Project]) -> dict:
     total = len(projects)
     if total == 0:
-        return {}
+        return {
+            "total_projects": 0,
+            "total_approved_cr": 0,
+            "total_revised_cr": 0,
+            "total_escalation_cr": 0,
+            "average_progress": 0,
+            "delayed_count": 0,
+            "delayed_examples": [],
+            "cost_overrun_count": 0,
+            "cost_overrun_examples": [],
+            "high_risk_count": 0,
+            "top_high_risk": [],
+        }
 
     approved = sum(float(p.approved_cost or 0) for p in projects)
     revised = sum(float(p.revised_cost or p.approved_cost or 0) for p in projects)
@@ -57,15 +74,9 @@ def get_portfolio_context(projects: list[Project]) -> dict:
         "delayed_count": len(delayed),
         "delayed_examples": [p.project_name for p in delayed[:6]],
         "cost_overrun_count": len(cost_overruns),
-        "cost_overrun_examples": [
-            f"{p.project_name} (+{round(((float(p.revised_cost)-float(p.approved_cost))/float(p.approved_cost))*100, 1)}%)"
-            for p in cost_overruns[:5] if p.approved_cost and float(p.approved_cost) > 0
-        ],
+        "cost_overrun_examples": [p.project_name for p in cost_overruns[:6]],
         "high_risk_count": len(high_risk),
-        "top_high_risk": [
-            f"{p.project_name} (Score: {score}/100, Driver: {reason})"
-            for p, score, reason in high_risk[:5]
-        ],
+        "top_high_risk": [f"{item[0].project_name} ({item[2]})" for item in high_risk[:5]],
     }
 
 
@@ -94,13 +105,13 @@ def call_gemini_assistant(message: str, context: dict, project_specific: str | N
 
     context_str = (
         f"LIVE INFRASTRUCTURE PORTFOLIO METRICS:\n"
-        f"• Total Monitored Projects: {context.get('total_projects')}\n"
-        f"• Total Approved Outlay: ₹{context.get('total_approved_cr')} Cr\n"
-        f"• Total Revised Cost: ₹{context.get('total_revised_cr')} Cr (Net Cost Escalation: ₹{context.get('total_escalation_cr')} Cr)\n"
-        f"• Portfolio Physical Progress: {context.get('average_progress')}%\n"
-        f"• Critical / Delayed Projects: {context.get('delayed_count')} projects (e.g. {', '.join(context.get('delayed_examples', []))})\n"
-        f"• Projects with Cost Overrun: {context.get('cost_overrun_count')} projects (e.g. {', '.join(context.get('cost_overrun_examples', []))})\n"
-        f"• High-Risk Projects Identified: {context.get('high_risk_count')} critical projects:\n  - " +
+        f"• Total Monitored Projects: {context.get('total_projects', 0)}\n"
+        f"• Total Approved Outlay: ₹{context.get('total_approved_cr', 0)} Cr\n"
+        f"• Total Revised Cost: ₹{context.get('total_revised_cr', 0)} Cr (Net Cost Escalation: ₹{context.get('total_escalation_cr', 0)} Cr)\n"
+        f"• Portfolio Physical Progress: {context.get('average_progress', 0)}%\n"
+        f"• Critical / Delayed Projects: {context.get('delayed_count', 0)} projects (e.g. {', '.join(context.get('delayed_examples', []))})\n"
+        f"• Projects with Cost Overrun: {context.get('cost_overrun_count', 0)} projects (e.g. {', '.join(context.get('cost_overrun_examples', []))})\n"
+        f"• High-Risk Projects Identified: {context.get('high_risk_count', 0)} critical projects:\n  - " +
         "\n  - ".join(context.get('top_high_risk', []))
     )
 
@@ -121,7 +132,8 @@ def call_gemini_assistant(message: str, context: dict, project_specific: str | N
         }
     }
 
-    models = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-flash-latest"]
+    # Valid Gemini model names for REST API
+    models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
 
     for model in models:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
@@ -134,7 +146,7 @@ def call_gemini_assistant(message: str, context: dict, project_specific: str | N
                     parts = candidates[0].get("content", {}).get("parts", [])
                     if parts:
                         return parts[0].get("text", "").strip()
-        except Exception as e:
+        except Exception:
             continue
 
     return None
@@ -177,8 +189,8 @@ def build_rule_answer(message: str, projects: list[Project], context: dict) -> s
     if "delayed" in text or "delay" in text:
         examples = "\n• ".join(context.get("delayed_examples", []))
         return (
-            f"⚠️ Delayed & Critical Projects Overview:\n"
-            f"• Total Delayed Projects: {context.get('delayed_count')} out of {context.get('total_projects')} monitored.\n"
+            f"⚠️ **Delayed & Critical Projects Overview**:\n"
+            f"• Total Delayed Projects: {context.get('delayed_count', 0)} out of {context.get('total_projects', 0)} monitored.\n"
             f"• Notable Delayed Projects:\n• {examples}\n\n"
             f"Key Mitigations:\n"
             f"1. Convene inter-ministerial Project Monitoring Group (PMG) to expedite site handover.\n"
@@ -188,8 +200,8 @@ def build_rule_answer(message: str, projects: list[Project], context: dict) -> s
     if "high risk" in text or "risk" in text:
         examples = "\n• ".join(context.get("top_high_risk", []))
         return (
-            f"🚨 High-Risk Projects Detected:\n"
-            f"• {context.get('high_risk_count')} projects are currently flagged with critical or high risk.\n"
+            f"🚨 **High-Risk Projects Detected**:\n"
+            f"• {context.get('high_risk_count', 0)} projects are currently flagged with critical or high risk.\n"
             f"• Top High-Risk Projects:\n• {examples}\n\n"
             f"Recommended Interventions:\n"
             f"1. Conduct immediate on-site safety and engineering audits.\n"
@@ -199,35 +211,35 @@ def build_rule_answer(message: str, projects: list[Project], context: dict) -> s
     if "cost" in text or "overrun" in text or "budget" in text or "escalat" in text:
         examples = "\n• ".join(context.get("cost_overrun_examples", []))
         return (
-            f"💰 Cost Overrun & Financial Intelligence:\n"
-            f"• Total Approved Outlay: ₹{context.get('total_approved_cr')} Cr\n"
-            f"• Total Revised Cost: ₹{context.get('total_revised_cr')} Cr\n"
-            f"• Cumulative Cost Escalation: ₹{context.get('total_escalation_cr')} Cr across {context.get('cost_overrun_count')} projects.\n"
+            f"💰 **Cost Overrun & Financial Intelligence**:\n"
+            f"• Total Approved Outlay: ₹{context.get('total_approved_cr', 0)} Cr\n"
+            f"• Total Revised Cost: ₹{context.get('total_revised_cr', 0)} Cr\n"
+            f"• Cumulative Cost Escalation: ₹{context.get('total_escalation_cr', 0)} Cr across {context.get('cost_overrun_count', 0)} projects.\n"
             f"• Projects with Highest Escalation:\n• {examples}\n\n"
             f"Mitigation: Invoke contractual price variation caps and audit raw material escalations."
         )
 
     if "land" in text or "clearance" in text or "forest" in text or "bottleneck" in text:
         return (
-            "Key Infrastructure Bottleneck Insights:\n"
+            "🚧 **Key Infrastructure Bottleneck Insights**:\n"
             "• Right of Way (RoW) & Land Acquisition: 42% of delays involve pending Section 19 notifications under RFCTLARR Act.\n"
             "• Environmental Clearances: 28% of projects require MoEFCC Stage-II compliance review.\n"
             "• Utility Shifting: Power transmission lines & water conduits obstructing critical path packages.\n\n"
             "Recommendation: Auto-escalate affected projects to the PM GatiShakti Network Planning Group (NPG)."
         )
 
-    if "summary" in text or "overview" in text or "portfolio" in text or "hello" in text or "hi" in text:
+    if "summary" in text or "overview" in text or "portfolio" in text or "hello" in text or "hi" in text or "hey" in text or "hii" in text:
         return (
-            f"📊 Pragati AI Portfolio Executive Summary:\n"
-            f"• Monitored Projects: {context.get('total_projects')}\n"
-            f"• Average Physical Progress: {context.get('average_progress')}%\n"
-            f"• Total Approved Outlay: ₹{context.get('total_approved_cr')} Cr\n"
-            f"• Total Revised Cost: ₹{context.get('total_revised_cr')} Cr (Escalation: ₹{context.get('total_escalation_cr')} Cr)\n"
-            f"• Critical Risks: {context.get('high_risk_count')} projects requiring immediate intervention.\n\n"
-            f"You can ask me about delayed projects, cost overruns, high-risk assets, or specific projects!"
+            f"👋 **Hello! Welcome to Pragati AI Assistant**.\n\n"
+            f"📊 **Infrastructure Portfolio Overview**:\n"
+            f"• Monitored Mega Projects: {context.get('total_projects', 0)}\n"
+            f"• Average Physical Progress: {context.get('average_progress', 0)}%\n"
+            f"• Total Approved Outlay: ₹{context.get('total_approved_cr', 0)} Cr\n"
+            f"• Total Revised Cost: ₹{context.get('total_revised_cr', 0)} Cr (Net Escalation: ₹{context.get('total_escalation_cr', 0)} Cr)\n"
+            f"• Critical Risk Flagged: {context.get('high_risk_count', 0)} projects requiring intervention.\n\n"
+            f"How can I assist you? Ask me about house blueprints (`/blueprint`), contractor trust ratings (`/contractors`), delayed projects, or cost escalation risk!"
         )
 
-    # Search for specific project by keyword
     for p in projects:
         if p.project_name and any(w in p.project_name.lower() for w in text.split() if len(w) > 3):
             approved = float(p.approved_cost or 0)
@@ -235,7 +247,7 @@ def build_rule_answer(message: str, projects: list[Project], context: dict) -> s
             diff = revised - approved
             pct = round((diff / (approved or 1)) * 100, 1)
             return (
-                f"📌 Project Intelligence: {p.project_name}\n"
+                f"📌 **Project Intelligence**: {p.project_name}\n"
                 f"• Sector: {p.sector or 'Infrastructure'} | Ministry: {p.ministry or 'Central Govt'}\n"
                 f"• Approved Cost: ₹{approved} Cr | Revised Cost: ₹{revised} Cr (Escalation: {pct}%)\n"
                 f"• Physical Progress: {p.physical_progress or 0}%\n"
@@ -244,16 +256,19 @@ def build_rule_answer(message: str, projects: list[Project], context: dict) -> s
             )
 
     return (
-        f"I have scanned your portfolio of {context.get('total_projects', len(projects))} infrastructure projects. "
+        f"I have scanned your portfolio of {context.get('total_projects', len(projects))} infrastructure projects.\n\n"
         "You can ask me:\n"
         "• 'Which projects are high risk?'\n"
         "• 'Which projects have cost overruns?'\n"
         "• 'Which projects are delayed?'\n"
-        "• 'Give me a portfolio summary'\n"
-        "• Or ask about any specific project name."
+        "• 'Design a 30x40 3BHK house blueprint'\n"
+        "• 'Find top rated contractors in Mumbai'\n"
+        "• Or ask about any specific project name!"
     )
 
 
+@router.post("/query")
+@router.post("/query", include_in_schema=False)
 @router.post("/chat")
 @router.post("/chat", include_in_schema=False)
 @router.post("", include_in_schema=False)
@@ -262,6 +277,7 @@ def assistant_chat(
     request: AssistantRequest,
     db: Session = Depends(get_db),
 ):
+    query_text = request.query_text
     projects = db.query(Project).order_by(Project.id.asc()).all()
     project_specific = None
 
@@ -278,16 +294,16 @@ def assistant_chat(
 
     context = get_portfolio_context(projects)
 
-    # 1. Try Gemini 3.6 Flash first
-    answer = call_gemini_assistant(request.message, context, project_specific)
+    # 1. Try Gemini REST API (gemini-2.0-flash / gemini-1.5-flash)
+    answer = call_gemini_assistant(query_text, context, project_specific)
 
     # 2. Fall back to deterministic expert engine if Gemini fails or is offline
     if not answer:
-        answer = build_rule_answer(request.message, projects, context)
+        answer = build_rule_answer(query_text, projects, context)
 
     return {
         "success": True,
-        "message": request.message,
+        "message": query_text,
         "answer": answer,
         "project_id": request.project_id,
     }
