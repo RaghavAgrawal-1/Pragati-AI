@@ -29,14 +29,14 @@ export default function Login() {
   return (
     <div className="relative flex h-full min-h-screen flex-col overflow-hidden bg-canvas lg:h-screen lg:min-h-0">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -right-40 -top-64 h-[620px] w-[620px] rounded-full bg-[#96A3DC]/25 blur-[100px]" />
-        <div className="absolute -bottom-72 -left-44 h-[560px] w-[560px] rounded-full bg-[#C5C1E4]/30 blur-[100px]" />
+        <div className="absolute -right-40 -top-64 h-[620px] w-[620px] rounded-full bg-orange/[0.08] blur-[100px]" />
+        <div className="absolute -bottom-72 -left-44 h-[560px] w-[560px] rounded-full bg-orange/[0.05] blur-[100px]" />
       </div>
 
       <div className="relative mx-auto flex w-full max-w-[1180px] flex-1 flex-col px-4 pb-5 pt-4 sm:px-7">
         <MarketingNav />
         <LoginCard />
-        <p className="mt-3 shrink-0 text-center text-[11.5px] text-[#9AA0B0]">
+        <p className="mt-3 shrink-0 text-center text-[11.5px] text-muted">
           Protected by single sign-on and audit logging on every project workspace.
         </p>
       </div>

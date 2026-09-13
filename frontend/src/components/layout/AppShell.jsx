@@ -21,12 +21,12 @@ export default function AppShell() {
 
   return (
     <ThemeProvider>
-      <div className="relative min-h-screen bg-[#F8FAFC] infra-grid text-ink selection:bg-amber-500/20 selection:text-amber-900">
-        {/* Subtle Ambient Radial Lighting Blobs */}
+      <div className="relative min-h-screen bg-canvas infra-grid text-ink selection:bg-orange-muted selection:text-orange">
+        {/* Dark Ambient Radial Lighting Blobs */}
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-          <div className="absolute -top-40 right-10 h-[500px] w-[500px] rounded-full bg-amber-400/[0.04] blur-[120px]" />
-          <div className="absolute top-[40%] -left-20 h-[450px] w-[450px] rounded-full bg-cyan-400/[0.04] blur-[120px]" />
-          <div className="absolute bottom-10 right-1/4 h-[400px] w-[400px] rounded-full bg-indigo-400/[0.03] blur-[120px]" />
+          <div className="absolute -top-40 right-10 h-[600px] w-[600px] rounded-full bg-orange/[0.06] blur-[130px]" />
+          <div className="absolute top-[40%] -left-20 h-[500px] w-[500px] rounded-full bg-purple-600/[0.04] blur-[130px]" />
+          <div className="absolute bottom-10 right-1/4 h-[450px] w-[450px] rounded-full bg-orange/[0.04] blur-[130px]" />
         </div>
 
         <Sidebar

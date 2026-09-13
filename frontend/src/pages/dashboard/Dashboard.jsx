@@ -53,9 +53,9 @@ function CostOverview({ cost }) {
   if (!cost) return <EmptyState title="Cost figures are not available yet." />;
   const max = Math.max(cost.approved_cost, cost.revised_cost, cost.expenditure) || 1;
   const rows = [
-    { label: "Approved outlay", value: cost.approved_cost, bar: "bg-slate-300" },
-    { label: "Revised cost", value: cost.revised_cost, bar: "bg-navy-soft" },
-    { label: "Expenditure to date", value: cost.expenditure, bar: "bg-navy" },
+    { label: "Approved outlay",      value: cost.approved_cost, bar: "bg-slate-600" },
+    { label: "Revised cost",         value: cost.revised_cost,  bar: "bg-orange/70" },
+    { label: "Expenditure to date",  value: cost.expenditure,   bar: "glow-bar" },
   ];
   const escalation = cost.approved_cost ? ((cost.revised_cost - cost.approved_cost) / cost.approved_cost) * 100 : null;
 
@@ -67,15 +67,15 @@ function CostOverview({ cost }) {
             <span className="text-[12.5px] text-muted">{r.label}</span>
             <span className="text-[13px] font-medium tabular-nums text-ink">{formatCurrency(r.value)}</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+          <div className="h-2 overflow-hidden rounded-full bg-white/[0.05]">
             <div className={`h-full rounded-full ${r.bar}`} style={{ width: `${(r.value / max) * 100}%` }} />
           </div>
         </div>
       ))}
       {escalation !== null && (
-        <p className="border-t border-line pt-3 text-[12.5px] text-muted">
+        <p className="border-t border-white/[0.06] pt-3 text-[12.5px] text-muted">
           Revised outlay is{" "}
-          <span className="font-semibold text-risk-high">+{escalation.toFixed(1)}% above</span> initial approved figure.
+          <span className="font-semibold text-orange">+{escalation.toFixed(1)}% above</span> initial approved figure.
         </p>
       )}
     </div>
@@ -86,24 +86,24 @@ function CostOverview({ cost }) {
 function ExecutiveInsight({ insight }) {
   if (!insight) return null;
   return (
-    <Card className="border-navy/15 bg-gradient-to-br from-[#F7F8FC] to-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-orange/20 bg-orange/[0.06] p-4">
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-navy text-white">
+        <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-orange/20 border border-orange/30 text-orange">
           <ShieldAlert size={15} aria-hidden="true" />
         </span>
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <p className="text-[11.5px] font-semibold uppercase tracking-wider text-navy">AI Decision Support Insight</p>
+            <p className="text-[11.5px] font-bold uppercase tracking-wider text-orange">AI Decision Support Insight</p>
             {insight.filter && (
-              <Link to={`/projects?${new URLSearchParams(insight.filter)}`} className="text-[12px] font-medium text-navy hover:underline">
+              <Link to={`/projects?${new URLSearchParams(insight.filter)}`} className="text-[12px] font-medium text-orange hover:underline">
                 View affected projects →
               </Link>
             )}
           </div>
-          <p className="mt-1 text-[13.5px] leading-relaxed text-slate-800">{insight.message}</p>
+          <p className="mt-1 text-[13.5px] leading-relaxed text-slate-200">{insight.message}</p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -114,15 +114,15 @@ function RecentWarnings({ warnings, loading }) {
   }
 
   return (
-    <ul className="divide-y divide-line">
+    <ul className="divide-y divide-white/[0.04]">
       {warnings.slice(0, 4).map((w) => (
         <li key={w.id}>
-          <Link to={`/warnings/${w.id}`} className="flex gap-3 px-4 py-3 hover:bg-slate-50 transition-colors">
+          <Link to={`/warnings/${w.id}`} className="flex gap-3 px-4 py-3 hover:bg-white/[0.03] transition-colors">
             <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${RISK_LEVELS[w.severity]?.dot ?? "bg-slate-400"}`} aria-hidden="true" />
             <span className="min-w-0 flex-1">
               <span className="flex items-baseline justify-between gap-2">
                 <span className="truncate text-[13px] font-medium text-ink">{w.project_name}</span>
-                <span className="shrink-0 text-[11px] text-slate-400">{formatRelative(w.detected_at)}</span>
+                <span className="shrink-0 text-[11px] text-muted">{formatRelative(w.detected_at)}</span>
               </span>
               <span className="mt-0.5 block text-[12px] leading-snug text-muted line-clamp-1">{w.message}</span>
             </span>
@@ -333,13 +333,13 @@ export default function Dashboard() {
       </div>
 
       {/* Interactive Mode Tabs */}
-      <div className="flex border-b border-line gap-2">
+      <div className="flex border-b border-white/[0.06] gap-2">
         <button
           onClick={() => setActiveTab("overview")}
           className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
             activeTab === "overview"
-              ? "border-navy text-navy font-semibold"
-              : "border-transparent text-slate-500 hover:text-slate-900"
+              ? "border-orange text-orange font-semibold"
+              : "border-transparent text-muted hover:text-ink"
           }`}
         >
           <LayoutDashboard size={15} />
@@ -349,8 +349,8 @@ export default function Dashboard() {
           onClick={() => setActiveTab("map")}
           className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
             activeTab === "map"
-              ? "border-navy text-navy font-semibold"
-              : "border-transparent text-slate-500 hover:text-slate-900"
+              ? "border-orange text-orange font-semibold"
+              : "border-transparent text-muted hover:text-ink"
           }`}
         >
           <MapPin size={15} />
@@ -360,12 +360,12 @@ export default function Dashboard() {
           onClick={() => setActiveTab("vision")}
           className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors ${
             activeTab === "vision"
-              ? "border-navy text-navy font-semibold"
-              : "border-transparent text-slate-500 hover:text-slate-900"
+              ? "border-orange text-orange font-semibold"
+              : "border-transparent text-muted hover:text-ink"
           }`}
         >
           <Eye size={15} />
-          Drone & Satellite Vision AI
+          Drone &amp; Satellite Vision AI
         </button>
       </div>
 
@@ -420,13 +420,13 @@ export default function Dashboard() {
                   </div>
 
                   {/* Filter Pills */}
-                  <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2 border-t border-line/60">
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2 border-t border-white/[0.06]">
                     <button
                       onClick={() => setFilterCategory("all")}
                       className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition-colors ${
                         filterCategory === "all"
-                          ? "bg-navy text-white"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          ? "bg-orange text-white"
+                          : "bg-white/[0.06] text-muted hover:bg-white/[0.10] hover:text-ink"
                       }`}
                     >
                       All Attention ({data?.critical_projects?.length ?? 0})
@@ -436,7 +436,7 @@ export default function Dashboard() {
                       className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition-colors ${
                         filterCategory === "high_risk"
                           ? "bg-red-600 text-white"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          : "bg-white/[0.06] text-muted hover:bg-white/[0.10] hover:text-ink"
                       }`}
                     >
                       High Risk Only
@@ -445,8 +445,8 @@ export default function Dashboard() {
                       onClick={() => setFilterCategory("cost")}
                       className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition-colors ${
                         filterCategory === "cost"
-                          ? "bg-amber-600 text-white"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          ? "bg-orange text-white"
+                          : "bg-white/[0.06] text-muted hover:bg-white/[0.10] hover:text-ink"
                       }`}
                     >
                       Cost Escalation
@@ -456,7 +456,7 @@ export default function Dashboard() {
                       className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition-colors ${
                         filterCategory === "delay"
                           ? "bg-blue-600 text-white"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          : "bg-white/[0.06] text-muted hover:bg-white/[0.10] hover:text-ink"
                       }`}
                     >
                       Schedule Delays

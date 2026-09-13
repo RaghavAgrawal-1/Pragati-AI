@@ -29,6 +29,8 @@ const CostEscalation = lazy(() => import("../pages/analytics/CostEscalation"));
 const Benchmarking = lazy(() => import("../pages/analytics/Benchmarking"));
 const Assistant = lazy(() => import("../pages/assistant/Assistant"));
 const Settings = lazy(() => import("../pages/settings/Settings"));
+const Budget = lazy(() => import("../pages/budget/Budget"));
+const Reports = lazy(() => import("../pages/reports/Reports"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
 export default function AppRoutes() {
@@ -67,7 +69,9 @@ export default function AppRoutes() {
             <Route path="/analytics/benchmark" element={<Benchmarking />} />
 
             <Route path="/assistant" element={<Assistant />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/budget"    element={<Budget />} />
+            <Route path="/reports"   element={<Reports />} />
+            <Route path="/settings"  element={<Settings />} />
           </Route>
         </Route>
 

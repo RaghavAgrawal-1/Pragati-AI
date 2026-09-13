@@ -5,158 +5,183 @@
 @tailwind utilities;
 
 :root {
-  /* Default: Safety Amber (Heavy Civil Infrastructure) */
-  --infra-primary: #F59E0B;
-  --infra-primary-rgb: 245, 158, 11;
-  --infra-primary-dark: #B45309;
-  --infra-primary-light: #FEF3C7;
-  --infra-glow: rgba(245, 158, 11, 0.25);
-  --infra-border-active: #F59E0B;
+  /* Default: Vivid Orange (Infrastructure Intelligence) */
+  --infra-primary:       #E85418;
+  --infra-primary-rgb:   232, 84, 24;
+  --infra-primary-dark:  #B83D0E;
+  --infra-primary-light: rgba(232, 84, 24, 0.15);
+  --infra-glow:          rgba(232, 84, 24, 0.28);
+  --infra-border-active: #E85418;
+
+  /* Dark surfaces */
+  --surface-0: #0C0D12;
+  --surface-1: #111318;
+  --surface-2: #1A1B25;
+  --surface-3: #1E2030;
+  --border-color: rgba(255,255,255,0.06);
 }
 
 [data-theme="blueprint"] {
-  /* CAD Blueprint Mode: Technical Cyan & Architectural Azure */
-  --infra-primary: #06B6D4;
-  --infra-primary-rgb: 6, 182, 212;
-  --infra-primary-dark: #0284C7;
-  --infra-primary-light: #E0F2FE;
-  --infra-glow: rgba(6, 182, 212, 0.25);
+  --infra-primary:       #06B6D4;
+  --infra-primary-rgb:   6, 182, 212;
+  --infra-primary-dark:  #0284C7;
+  --infra-primary-light: rgba(6, 182, 212, 0.15);
+  --infra-glow:          rgba(6, 182, 212, 0.25);
   --infra-border-active: #06B6D4;
 }
 
 [data-theme="surveyor"] {
-  /* Surveyor & Eco-Infrastructure Mode: Precision Emerald */
-  --infra-primary: #10B981;
-  --infra-primary-rgb: 16, 185, 129;
-  --infra-primary-dark: #047857;
-  --infra-primary-light: #D1FAE5;
-  --infra-glow: rgba(16, 185, 129, 0.25);
-  --infra-border-active: #10B981;
+  --infra-primary:       #22C55E;
+  --infra-primary-rgb:   34, 197, 94;
+  --infra-primary-dark:  #15803D;
+  --infra-primary-light: rgba(34, 197, 94, 0.15);
+  --infra-glow:          rgba(34, 197, 94, 0.25);
+  --infra-border-active: #22C55E;
 }
 
 @layer base {
-  /* `only light` stops Chrome's auto dark mode from inverting the palette. */
-  html { color-scheme: only light; -webkit-font-smoothing: antialiased; }
+  html { color-scheme: dark; -webkit-font-smoothing: antialiased; }
   html, body, #root { height: 100%; }
   body { @apply bg-canvas text-ink font-sans; }
   :focus-visible { outline: 2px solid var(--infra-primary); outline-offset: 2px; }
+
+  /* Smooth transitions on all interactive elements */
+  a, button, input, select, textarea {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
 @layer components {
-  /* Engineering CAD Blueprint Drafting Grid */
+  /* ── Dark Glass Card Surfaces ── */
+  .glass-card {
+    background: rgba(26, 27, 37, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .glass-header {
+    background: rgba(17, 19, 24, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .dark-glass {
+    background: rgba(12, 13, 18, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* ── Orange Glow Utilities ── */
+  .ambient-glow {
+    box-shadow: 0 0 30px -8px var(--infra-glow);
+  }
+  .neon-border {
+    border-color: var(--infra-primary);
+    box-shadow: 0 0 14px -2px var(--infra-glow);
+  }
+  .orange-glow {
+    box-shadow: 0 0 20px -4px rgba(232, 84, 24, 0.5);
+  }
+
+  /* ── Engineering CAD Blueprint Grid ── */
   .infra-grid {
     background-size: 28px 28px;
     background-image:
-      linear-gradient(to right, rgba(100, 116, 139, 0.06) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(100, 116, 139, 0.06) 1px, transparent 1px);
+      linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
   }
 
-  /* Micro Industrial Caution Warning Stripes */
+  /* ── Industrial Caution Stripes ── */
   .hazard-stripes {
     background-image: repeating-linear-gradient(
       -45deg,
-      rgba(245, 158, 11, 0.18),
-      rgba(245, 158, 11, 0.18) 10px,
-      rgba(15, 23, 42, 0.08) 10px,
-      rgba(15, 23, 42, 0.08) 20px
+      rgba(232, 84, 24, 0.15),
+      rgba(232, 84, 24, 0.15) 10px,
+      transparent 10px,
+      transparent 20px
     );
   }
 
-  /* Interactive Technical Corner Brackets */
-  .infra-brackets {
-    position: relative;
-  }
+  /* ── Technical Corner Brackets ── */
+  .infra-brackets { position: relative; }
   .infra-brackets::before {
     content: "";
     position: absolute;
-    top: -1px;
-    left: -1px;
-    width: 8px;
-    height: 8px;
+    top: -1px; left: -1px;
+    width: 8px; height: 8px;
     border-top: 2px solid var(--infra-primary);
     border-left: 2px solid var(--infra-primary);
-    pointer-events: none;
-    opacity: 0.7;
+    pointer-events: none; opacity: 0.7;
     transition: opacity 0.2s ease, width 0.2s ease, height 0.2s ease;
   }
   .infra-brackets::after {
     content: "";
     position: absolute;
-    bottom: -1px;
-    right: -1px;
-    width: 8px;
-    height: 8px;
+    bottom: -1px; right: -1px;
+    width: 8px; height: 8px;
     border-bottom: 2px solid var(--infra-primary);
     border-right: 2px solid var(--infra-primary);
-    pointer-events: none;
-    opacity: 0.7;
+    pointer-events: none; opacity: 0.7;
     transition: opacity 0.2s ease, width 0.2s ease, height 0.2s ease;
   }
   .infra-brackets:hover::before,
-  .infra-brackets:hover::after {
-    opacity: 1;
-    width: 14px;
-    height: 14px;
-  }
+  .infra-brackets:hover::after { opacity: 1; width: 14px; height: 14px; }
 
-  /* The auth panel's light mesh */
+  /* ── Auth panel gradient (dark) ── */
   .panel-gradient {
     background:
-      radial-gradient(115% 85% at 4% 104%, #222C46 0%, rgba(34,44,70,0) 60%),
-      radial-gradient(75% 60% at 62% 16%, #FFFFFF 0%, rgba(255,255,255,0) 62%),
-      radial-gradient(95% 95% at 98% 82%, #A9B4E2 0%, rgba(169,180,226,0) 66%),
-      linear-gradient(140deg, #EDEFF8 0%, #CBD2EC 42%, #8D99C9 100%);
+      radial-gradient(115% 85% at 4% 104%, #1A0A04 0%, rgba(26,10,4,0) 60%),
+      radial-gradient(75% 60% at 62% 16%, rgba(232,84,24,0.12) 0%, transparent 62%),
+      radial-gradient(95% 95% at 98% 82%, rgba(232,84,24,0.08) 0%, transparent 66%),
+      linear-gradient(140deg, #0C0D12 0%, #111318 42%, #1A1B25 100%);
   }
 
-  /* Modern Glassmorphic Surfaces */
-  .glass-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(226, 232, 240, 0.8);
+  /* ── Animated Orange Bar ── */
+  .glow-bar {
+    background: linear-gradient(90deg, #E85418, #FF6B35);
+    box-shadow: 0 0 10px rgba(232, 84, 24, 0.5);
+    animation: barGrow 0.8s cubic-bezier(0.16, 0.84, 0.3, 1) both;
   }
 
-  .glass-header {
-    background: rgba(255, 255, 255, 0.82);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+  /* ── Shimmer Skeleton ── */
+  .skeleton-dark {
+    background: linear-gradient(90deg, #1A1B25 25%, #1E2030 50%, #1A1B25 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s linear infinite;
   }
 
-  .dark-glass {
-    background: rgba(12, 19, 34, 0.88);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+  /* ── Input / Form dark style ── */
+  .input-dark {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #F0F2F8;
+    border-radius: 10px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
-
-  /* Ambient Glow Utilities */
-  .ambient-glow {
-    box-shadow: 0 0 25px -5px var(--infra-glow);
-  }
-
-  .neon-border {
+  .input-dark:focus {
     border-color: var(--infra-primary);
-    box-shadow: 0 0 12px -2px var(--infra-glow);
+    box-shadow: 0 0 0 3px var(--infra-glow);
   }
+  .input-dark::placeholder { color: #4B5563; }
 }
 
-/* Modern Minimal Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+/* ── Dark Minimal Scrollbars ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
+  background: rgba(255,255,255,0.08);
   border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.55);
-}
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
 }
-

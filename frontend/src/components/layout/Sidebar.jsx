@@ -7,14 +7,14 @@ import { useTheme } from "../../context/ThemeContext";
 
 function Brand({ collapsed }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.08]">
-      <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 via-amber-600 to-slate-900 p-[1px] shadow-lg shadow-amber-500/10">
-        <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-slate-950">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-amber-400">
+    <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.06]">
+      <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#E85418] via-[#B83D0E] to-[#0C0D12] p-[1px] shadow-orange-sm">
+        <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-[#0C0D12]">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-[#E85418]">
             <path d="M2 20h20" strokeWidth="2.2" strokeLinecap="round" />
             <path d="M4 20L12 4l8 16" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M12 4v16" strokeWidth="1.5" strokeDasharray="2 2" stroke="var(--infra-primary)" />
-            <path d="M7 14h10" strokeWidth="1.8" stroke="var(--infra-primary)" />
+            <path d="M12 4v16" strokeWidth="1.5" strokeDasharray="2 2" stroke="#E85418" />
+            <path d="M7 14h10" strokeWidth="1.8" stroke="#E85418" />
           </svg>
         </div>
       </div>
@@ -25,7 +25,7 @@ function Brand({ collapsed }) {
             <span className="block text-[15px] font-extrabold tracking-tight text-white font-sans">
               Pragati AI
             </span>
-            <span className="rounded bg-amber-500/15 border border-amber-500/30 px-1 py-0.2 text-[9px] font-mono font-bold text-amber-300">
+            <span className="rounded bg-orange/15 border border-orange/30 px-1 py-0.5 text-[9px] font-mono font-bold text-orange">
               v2.5
             </span>
           </div>
@@ -46,8 +46,8 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
     [
       "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-[12.5px] font-medium transition-all duration-200",
       isActive
-        ? "bg-white/[0.12] text-white font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1.5 before:rounded-r before:bg-[var(--infra-primary)] before:shadow-[0_0_8px_var(--infra-primary)]"
-        : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-100 hover:translate-x-0.5",
+        ? "bg-orange/[0.12] text-white font-semibold before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1.5 before:rounded-r before:bg-orange before:shadow-[0_0_8px_rgba(232,84,24,0.6)]"
+        : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100 hover:translate-x-0.5",
     ].join(" ");
 
   return (
@@ -101,7 +101,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onCloseMobile
                     >
                       <Icon
                         size={16}
-                        className="shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:text-amber-400"
+                        className="shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:text-orange"
                         aria-hidden="true"
                       />
                       {!collapsed && <span className="truncate">{label}</span>}
