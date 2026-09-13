@@ -13,6 +13,8 @@ import {
   MapPin,
   Eye,
   SlidersHorizontal,
+  Sparkles,
+  Compass,
 } from "lucide-react";
 
 import PageHeader from "../../components/layout/PageHeader";
@@ -189,37 +191,79 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <PageHeader
-        title={`${greeting()}.`}
-        subtitle="Portfolio-wide risk, cost escalation and schedule early warning telemetry."
-        badge={isDemo && <DemoBadge />}
-        meta={data?.updated_at ? `Telemetry synced ${formatRelative(data.updated_at)}` : undefined}
-        actions={
-          <Button variant="secondary" size="sm" icon={RefreshCw} onClick={refetch}>
-            Refresh Signals
-          </Button>
-        }
-      />
+      {/* Modern Executive Mission Control Hero */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B101E] via-[#0F172A] to-[#0A1224] p-6 sm:p-8 text-white border border-slate-800/90 shadow-2xl">
+        {/* Ambient Glow mesh */}
+        <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-amber-500/15 blur-[90px]" />
+        <div aria-hidden="true" className="pointer-events-none absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-cyan-500/15 blur-[90px]" />
 
-      {/* Civil Infrastructure Corridor Command Bar */}
-      <div className="rounded-xl border border-slate-200/90 bg-white/95 p-3 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2 text-slate-700 font-semibold">
-          <span className="flex h-2 w-2 rounded-full bg-[var(--infra-primary)] shadow-sm" />
-          <span className="uppercase tracking-wider text-[11px] font-bold text-slate-500">Live Infrastructure Grid:</span>
-          <span className="font-mono text-ink font-bold">MoSPI & PM-GatiShakti 2026</span>
-        </div>
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] border border-white/15 px-3.5 py-1 text-[11px] font-mono font-medium text-amber-300 mb-3 backdrop-blur-md">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              NATIONAL INFRASTRUCTURE INTELLIGENCE • MOSPI & GATISHAKTI
+              {isDemo && <span className="ml-1 text-slate-400">| TELEMETRY ACTIVE</span>}
+            </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
-          <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200">NHAI Highways</span>
-          <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200">Railways & DFC</span>
-          <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200">Urban Metros</span>
-          <span className="px-2 py-0.5 rounded bg-slate-50 text-slate-700 border border-slate-200">Sagarmala Ports</span>
-        </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white font-sans">
+              Executive Mission Control
+            </h2>
+            <p className="mt-2 text-[14px] leading-relaxed text-slate-300 max-w-xl">
+              Real-time early warning telemetry, machine-learning cost risk forecasts, and multi-modal structural oversight for India's priority mega projects.
+            </p>
 
-        <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-semibold text-slate-700">99.4% AI Accuracy</span>
+            {/* Live Corridor Chips */}
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-[11.5px] font-mono">
+              <span className="rounded-lg bg-white/[0.06] border border-white/10 px-2.5 py-1 text-slate-200">
+                🛣️ NHAI Expressways
+              </span>
+              <span className="rounded-lg bg-white/[0.06] border border-white/10 px-2.5 py-1 text-slate-200">
+                🚆 Dedicated Freight
+              </span>
+              <span className="rounded-lg bg-white/[0.06] border border-white/10 px-2.5 py-1 text-slate-200">
+                ⚡ Ultra-Mega Solar
+              </span>
+              <span className="rounded-lg bg-white/[0.06] border border-white/10 px-2.5 py-1 text-slate-200">
+                🌊 Deepwater Ports
+              </span>
+            </div>
+          </div>
+
+          {/* Quick Action Station */}
+          <div className="flex flex-wrap sm:flex-nowrap lg:flex-col gap-2.5 shrink-0">
+            <Button
+              variant="primary"
+              size="md"
+              icon={Sparkles}
+              onClick={() => navigate("/assistant")}
+              className="w-full justify-center shadow-lg shadow-amber-500/20"
+            >
+              Ask AI Copilot
+            </Button>
+            <div className="flex gap-2 w-full">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={Compass}
+                onClick={() => navigate("/blueprint")}
+                className="flex-1 justify-center bg-white/10 text-white border-white/20 hover:bg-white/15"
+              >
+                CAD Studio
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={RefreshCw}
+                onClick={refetch}
+                className="flex-1 justify-center bg-white/10 text-white border-white/20 hover:bg-white/15"
+              >
+                Sync Signals
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 

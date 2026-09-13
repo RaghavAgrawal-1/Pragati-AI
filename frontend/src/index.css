@@ -107,8 +107,56 @@
       radial-gradient(95% 95% at 98% 82%, #A9B4E2 0%, rgba(169,180,226,0) 66%),
       linear-gradient(140deg, #EDEFF8 0%, #CBD2EC 42%, #8D99C9 100%);
   }
+
+  /* Modern Glassmorphic Surfaces */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+  }
+
+  .glass-header {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .dark-glass {
+    background: rgba(12, 19, 34, 0.88);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  /* Ambient Glow Utilities */
+  .ambient-glow {
+    box-shadow: 0 0 25px -5px var(--infra-glow);
+  }
+
+  .neon-border {
+    border-color: var(--infra-primary);
+    box-shadow: 0 0 12px -2px var(--infra-glow);
+  }
+}
+
+/* Modern Minimal Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.55);
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
 }
+

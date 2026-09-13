@@ -48,6 +48,8 @@ export default {
         lift: "0 10px 22px -16px rgba(30,40,80,.6)",
         submit: "0 14px 28px -18px rgba(31,39,57,.9)",
         "infra-card": "0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04)",
+        "card-modern": "0 4px 24px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03)",
+        "card-hover": "0 16px 36px -8px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.04)",
         "safety-glow": "0 0 15px -3px rgba(245, 158, 11, 0.35)",
         "blueprint-glow": "0 0 15px -3px rgba(6, 182, 212, 0.35)",
         "surveyor-glow": "0 0 15px -3px rgba(16, 185, 129, 0.35)",
@@ -55,10 +57,15 @@ export default {
       keyframes: {
         rise: { from: { opacity: 0, transform: "translateY(14px) scale(.994)" }, to: { opacity: 1, transform: "none" } },
         fadeIn: { from: { opacity: 0, transform: "translateY(-4px)" }, to: { opacity: 1, transform: "none" } },
+        pulseGlow: {
+          "0%, 100%": { opacity: 1, transform: "scale(1)" },
+          "50%": { opacity: 0.5, transform: "scale(1.2)" },
+        },
       },
       animation: {
         rise: "rise .9s cubic-bezier(.16,.84,.3,1) both",
         fadeIn: "fadeIn .3s ease both",
+        pulseGlow: "pulseGlow 2s ease-in-out infinite",
       },
     },
   },

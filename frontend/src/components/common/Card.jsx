@@ -7,7 +7,7 @@ export default function Card({
 }) {
   return (
     <Tag
-      className={`rounded-xl border border-slate-200/90 bg-white/95 shadow-sm hover:shadow-[0_8px_24px_-8px_rgba(15,23,42,0.08)] hover:border-slate-300/90 transition-all duration-200 ${
+      className={`rounded-2xl border border-slate-200/80 bg-white/90 backdrop-blur-md shadow-[0_4px_20px_-4px_rgba(15,23,42,0.05)] hover:shadow-[0_14px_36px_-6px_rgba(15,23,42,0.09)] hover:border-slate-300 transition-all duration-300 ${
         brackets ? "infra-brackets" : ""
       } ${className}`}
       {...props}
@@ -19,10 +19,10 @@ export default function Card({
 
 export function CardHeader({ title, subtitle, actions, badge }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+    <div className="flex items-start justify-between gap-4 border-b border-slate-100/90 px-6 py-4.5">
       <div>
-        <div className="flex items-center gap-2">
-          <h3 className="text-[13.5px] font-bold text-ink tracking-tight">{title}</h3>
+        <div className="flex items-center gap-2.5">
+          <h3 className="text-[14px] font-bold text-ink tracking-tight">{title}</h3>
           {badge}
         </div>
         {subtitle && <p className="mt-0.5 text-[12px] text-muted">{subtitle}</p>}
